@@ -1,0 +1,131 @@
+'use client';
+import {
+  LayoutDashboard,
+  MessageSquare,
+  Settings,
+  UserIcon,
+} from 'lucide-react';
+import Link from 'next/link';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Skeleton } from '@/components/ui/skeleton'; // Assuming you have a Skeleton component
+import { useSession } from '@/lib/auth-client';
+import { getInitials } from '@/lib/utils';
+import { SignOut } from './logout';
+
+export default function UserDropDown() {
+  const { data: session, isPending } = useSession();
+
+  // 1. Handle Loading State
+  // If isPending is true, render a Skeleton component or null/div to reserve space.
+  if (isPending) {
+    return (
+      <div className='pl-2'>
+        <Skeleton className='h-9 w-9 rounded-full' />
+      </div>
+    );
+  }
+
+  // 2. Handle Unauthenticated State
+  // If no session exists (session?.user is falsy), show the login button.
+  if (!session?.user) {
+    return (
+      <div className='pl-2'>
+        <Link href='/auth/signin'>
+          <Button variant='outline'>Sign In</Button>
+        </Link>
+        <Link href='/auth/signup' className='ml-4'>
+          <Button>Sign Up</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  // 3. Handle Authenticated State (User Logged In)
+  return (
+    <div className='pl-2'>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <div className='relative'>
+            <Avatar className='border-primary/20 hover:border-primary/40 h-9 w-9 cursor-pointer border-2 transition-all'>
+              <AvatarImage
+                // biome-ignore lint: error
+                src={session.user.image!}
+                alt={session.user.name || 'User avatar'}
+              />
+              <AvatarFallback className='bg-primary/10 text-primary'>
+                {getInitials(session.user.name)}
+              </AvatarFallback>
+            </Avatar>
+          </div>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          className='w-56'
+          align='end'
+          forceMount
+          sideOffset={8}
+        >
+          <DropdownMenuLabel className='font-normal'>
+            <div className='flex flex-col space-y-1'>
+              <p className='text-sm leading-none font-medium'>
+                {session.user.name}
+              </p>
+              <p className='text-muted-foreground text-xs leading-none'>
+                {session.user.email}
+              </p>
+            </div>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link
+              href='/dashboard'
+              className='flex w-full cursor-pointer items-center'
+            >
+              <LayoutDashboard className='text-primary/70 mr-2 h-4 w-4' />
+              Dashboard
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link
+              href='/chat'
+              className='flex w-full cursor-pointer items-center justify-between'
+            >
+              <div className='flex items-center gap-2'>
+                <MessageSquare className='text-primary/70 mr-2 h-4 w-4' />
+                Messages
+              </div>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link
+              href='/dashboard/profile/edit-profile'
+              className='flex w-full cursor-pointer items-center'
+            >
+              <Settings className='text-primary/70 mr-2 h-4 w-4' />
+              Edit Account
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link
+              href='/dashboard/profile'
+              className='flex w-full cursor-pointer items-center'
+            >
+              <UserIcon className='text-primary/70 mr-2 h-4 w-4' />
+              Account Details
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <SignOut />
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}
