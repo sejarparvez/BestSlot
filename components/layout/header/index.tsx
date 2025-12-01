@@ -3,7 +3,13 @@ import HeaderClient from './header-client';
 import { ModeToggle } from './theme-toggle';
 import UserDropDown from './user';
 
-export default async function Header({ className }: { className?: string }) {
+export default async function Header({
+  className,
+  sidebarOpen,
+}: {
+  className?: string;
+  sidebarOpen?: boolean;
+}) {
   return (
     <div className={cn(className)}>
       <header className='bg-background fixed top-0 z-50 w-full border-b shadow-sm'>
@@ -11,7 +17,7 @@ export default async function Header({ className }: { className?: string }) {
           <div className='flex items-center justify-between gap-6'>
             {/* Left Section: Mobile Menu Trigger & Logo */}
             <div className='flex-none'>
-              <HeaderClient />
+              <HeaderClient sidebarOpen={sidebarOpen} />
             </div>
 
             {/* Right Section: Search, Theme, Notifications, Cart, User */}

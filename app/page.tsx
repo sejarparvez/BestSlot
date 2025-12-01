@@ -1,11 +1,25 @@
-export default function Home() {
+import { AppSidebar } from '@/components/app-sidebar';
+import Header from '@/components/layout/header';
+
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+
+export default function Page() {
   return (
-    <div>
-      <div className='flex items-center justify-center min-h-screen'>
-        <h1 className='text-green-500 font-extrabold text-4xl'>
-          This will be our home page
-        </h1>
-      </div>
-    </div>
+    <SidebarProvider
+      style={
+        {
+          '--sidebar-width': 'calc(var(--spacing) * 72)',
+          '--header-height': 'calc(var(--spacing) * 12)',
+        } as React.CSSProperties
+      }
+    >
+      <Header sidebarOpen />
+      <AppSidebar />
+      <SidebarInset className='pt-20'>
+        <div className='flex flex-1 flex-col'>
+          <h1 className='text-5xl font-extrabold text-primary'>Hello World!</h1>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
