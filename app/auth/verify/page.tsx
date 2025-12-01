@@ -12,7 +12,7 @@ export default async function Page({ searchParams }: PageProps) {
   const error = (await searchParams).error;
 
   if (!error) {
-    redirect('/dashboard');
+    redirect('/dashboard/profile');
   }
 
   return (

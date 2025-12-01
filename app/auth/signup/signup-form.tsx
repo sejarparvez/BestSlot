@@ -88,7 +88,7 @@ export function SignupForm({
       }
 
       toast.success('Account created successfully!', {
-        description: 'Welcome to Easy Stock. Redirecting you now...',
+        description: 'Welcome to BestSlot. Redirecting you now...',
       });
 
       reset();
