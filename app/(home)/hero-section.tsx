@@ -1,5 +1,7 @@
 'use client';
 
+import Autoplay from 'embla-carousel-autoplay';
+import Image from 'next/image';
 import {
   Carousel,
   CarouselContent,
@@ -7,8 +9,6 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
-import Image from 'next/image';
-import Autoplay from 'embla-carousel-autoplay';
 
 export default function HeroSection() {
   return (
