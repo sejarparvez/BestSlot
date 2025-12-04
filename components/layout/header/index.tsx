@@ -22,10 +22,6 @@ export default async function Header({
 
             {/* Right Section: Search, Theme, Notifications, Cart, User */}
             <div className='flex flex-none items-center justify-end gap-4'>
-              {/* Desktop Search Bar */}
-
-              {/* Removed MobileSearch component */}
-
               <div className='flex items-center gap-2'>
                 {/* Desktop Theme Switcher */}
                 <div className='hidden md:block'>
