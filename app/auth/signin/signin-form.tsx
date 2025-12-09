@@ -115,18 +115,7 @@ export function LoginForm({
   }
 
   async function handleSocialLogin(provider: 'google' | 'facebook') {
-    // Note: Updated the provider type to include 'facebook'
-
-    // Since 'facebook' is handled, we only proceed with implemented providers (like 'google')
-
     setIsLoading(true);
-
-    // Optional: Define fetchOptions here if you need to pass specific headers/params
-    // const fetchOptions = {
-    //     headers: {
-    //         'X-Custom-Auth-Param': 'value'
-    //     }
-    // };
 
     try {
       await signIn.social({
@@ -264,7 +253,7 @@ export function LoginForm({
               </FieldSeparator>
 
               {/* Social Login Buttons */}
-              <Field className='grid grid-cols-2 gap-4'>
+              <Field className='grid grid-cols-1 gap-4'>
                 <Button
                   variant='outline'
                   type='button'
@@ -283,23 +272,6 @@ export function LoginForm({
                     />
                   </svg>
                   Google
-                </Button>
-                <Button
-                  variant='outline'
-                  type='button'
-                  onClick={() => handleSocialLogin('facebook')}
-                  disabled={isLoading}
-                >
-                  <svg
-                    className='mr-2 h-4 w-4'
-                    xmlns='http://www.w3.org/2000/svg'
-                    viewBox='0 0 24 24'
-                    fill='currentColor'
-                  >
-                    <title>Facebook</title>
-                    <path d='M14 13.5h2.5l1-4H14v-2c0-1.03 0-1.7 1.5-1.7h1v-3.5a2.11 2.11 0 0 0-3.5-.13c-1.8 0-3 1.08-3 3.5v2.83H7.5v4H11V24h3V13.5z' />
-                  </svg>
-                  Facebook
                 </Button>
               </Field>
 

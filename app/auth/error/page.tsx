@@ -66,14 +66,14 @@ export default function SigninErrorPage() {
 
           {/* Actions */}
           <div className='space-y-3 pt-2'>
-            <Link href='/signin' className='block w-full'>
+            <Link href='/auth/signin' className='block w-full'>
               <Button className='w-full' size='lg'>
                 Try Again
               </Button>
             </Link>
 
             <div className='grid grid-cols-2 gap-2'>
-              <Link href='/forgot-password' className='block'>
+              <Link href='/auth/forgot-password' className='block'>
                 <Button
                   variant='outline'
                   className='w-full bg-transparent'
