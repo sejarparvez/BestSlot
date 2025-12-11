@@ -16,24 +16,24 @@ import type React from 'react';
 import { Sidebar, SidebarContent, SidebarRail } from '@/components/ui/sidebar';
 
 const menuItems = [
-  { icon: Flame, label: 'HOT GAMES', url: '#' },
-  { icon: Users, label: 'INVITE FRIENDS', url: '#' },
-  { icon: Heart, label: 'FAVORITES', url: '#' },
-  { icon: Gift, label: 'PROMOTION', url: '#' },
-  { icon: Gamepad2, label: 'SLOTS', url: '#' },
-  { icon: Trophy, label: 'REWARD CENTER', url: '#' },
-  { icon: Radio, label: 'LIVE', url: '#' },
-  { icon: BarChart3, label: 'MANUAL REBATE', url: '#' },
-  { icon: Zap, label: 'SPORTS', url: '#' },
-  { icon: Sticker, label: 'VIP', url: '#' },
-  { icon: Dices, label: 'E-SPORTS', url: '#' },
-  { icon: Target, label: 'MISSION', url: '#' },
-  { icon: Sticker, label: 'POKER', url: '#' },
-  { icon: Dices, label: 'ENGLISH', url: '#' },
-  { icon: Target, label: 'FISH', url: '#' },
-  { icon: Target, label: 'APP DOWNLOAD', url: '#' },
-  { icon: Target, label: 'LOTTERY', url: '#' },
-  { icon: Target, label: 'CUSTOMER SERVICE', url: '#' },
+  { icon: Flame, label: 'Hot Games', url: '#' },
+  { icon: Users, label: 'Invite Friends', url: '#' },
+  { icon: Heart, label: 'Favorites', url: '#' },
+  { icon: Gift, label: 'Promotion', url: '#' },
+  { icon: Gamepad2, label: 'Slots', url: '#' },
+  { icon: Trophy, label: 'Reward Center', url: '#' },
+  { icon: Radio, label: 'Live', url: '#' },
+  { icon: BarChart3, label: 'Manual Rebate', url: '#' },
+  { icon: Zap, label: 'Sports', url: '#' },
+  { icon: Sticker, label: 'Vip', url: '#' },
+  { icon: Dices, label: 'E-Sports', url: '#' },
+  { icon: Target, label: 'Mission', url: '#' },
+  { icon: Sticker, label: 'Poker', url: '#' },
+  { icon: Dices, label: 'English', url: '#' },
+  { icon: Target, label: 'Fish', url: '#' },
+  { icon: Target, label: 'App Download', url: '#' },
+  { icon: Target, label: 'Lottery', url: '#' },
+  { icon: Target, label: 'Customer Service', url: '#' },
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -47,7 +47,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <a
                 key={item.label}
                 href={item.url}
-                className='flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-card border border-border hover:bg-accent hover:text-accent-foreground transition-all duration-200 group'
+                className='flex flex-col items-center justify-center gap-2 p-3 md:p-4 rounded-lg bg-card border border-border hover:bg-accent hover:text-accent-foreground transition-all duration-200 group'
               >
                 <Icon className='w-6 h-6 transition-colors' />
                 <span className='text-xs font-semibold text-center leading-tight'>

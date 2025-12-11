@@ -60,7 +60,7 @@ export default function Footer() {
     <footer className='bg-background text-foreground border-t border-border'>
       {/* Top Section - Newsletter */}
       <div className='border-b border-border'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12'>
+        <div className='max-w-7xl mx-auto  py-8 sm:py-12'>
           <div className='grid grid-cols-1 md:grid-cols-2 gap-8 items-center'>
             <div>
               <h3 className='text-xl sm:text-2xl font-bold mb-2'>
@@ -86,7 +86,7 @@ export default function Footer() {
       </div>
 
       {/* Main Content */}
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16'>
+      <div className='max-w-7xl mx-auto py-12 sm:py-16'>
         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8'>
           {/* Brand Section */}
           <div className='lg:col-span-1'>
@@ -154,7 +154,7 @@ export default function Footer() {
       </div>
 
       {/* Contact & Trust Section */}
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 border-t border-border'>
+      <div className='max-w-7xl mx-auto py-8 sm:py-12 border-t border-border'>
         <div className='grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8'>
           <div className='flex gap-3'>
             <Mail className='shrink-0 mt-1' size={20} />
@@ -181,7 +181,7 @@ export default function Footer() {
       </div>
 
       {/* Trust Badges & Bottom */}
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 border-t border-border'>
+      <div className='max-w-7xl mx-auto py-8 border-t border-border'>
         <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8'>
           <div className='flex  gap-2 text-muted-foreground text-sm'>
             <Shield size={18} />
