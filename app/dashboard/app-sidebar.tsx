@@ -32,57 +32,57 @@ const data = {
   navMain: [
     {
       title: 'Dashboard',
-      url: '#',
+      url: '/dashboard',
       icon: IconDashboard,
     },
     {
       title: 'My Account',
-      url: '#',
+      url: '/dashboard/my-account',
       icon: IconUserCog,
     },
     {
       title: 'Deposit',
-      url: '#',
+      url: '/dashboard/deposit',
       icon: IconArrowDownCircle,
     },
     {
       title: 'Withdrawal',
-      url: '#',
+      url: '/dashboard/withdrawal',
       icon: IconArrowUpCircle,
     },
     {
       title: 'Betting Records',
-      url: '#',
+      url: '/dashboard/betting-records',
       icon: IconListDetails,
     },
     {
       title: 'Account Records',
-      url: '#',
+      url: '/dashboard/account-records',
       icon: IconFileText,
     },
     {
       title: 'Profits & Losses',
-      url: '#',
+      url: '/dashboard/profits-losses',
       icon: IconChartBar,
     },
     {
       title: 'Rewards Center',
-      url: '#',
+      url: '/dashboard/rewards-center',
       icon: IconGift,
     },
     {
       title: 'Invite Friends',
-      url: '#',
+      url: '/dashboard/invite-friends',
       icon: IconUsersPlus,
     },
     {
       title: 'Internal Messages',
-      url: '#',
+      url: '/dashboard/internal-messages',
       icon: IconMail,
     },
     {
       title: 'Manual Rebate',
-      url: '#',
+      url: '/dashboard/manual-rebate',
       icon: IconCash,
     },
   ],
@@ -90,7 +90,7 @@ const data = {
   navSecondary: [
     {
       title: 'Customer Support',
-      url: '#',
+      url: '/dashboard/customer-support',
       icon: IconHelpCircle,
     },
   ],
