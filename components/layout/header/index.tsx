@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import Balance from './balance';
 import HeaderClient from './header-client';
 import { ModeToggle } from './theme-toggle';
 import UserDropDown from './user';
@@ -23,6 +24,7 @@ export default async function Header({
             {/* Right Section: Search, Theme, Notifications, Cart, User */}
             <div className='flex flex-none items-center justify-end gap-4'>
               <div className='flex items-center gap-2'>
+                <Balance />
                 <ModeToggle />
                 <UserDropDown />
               </div>
