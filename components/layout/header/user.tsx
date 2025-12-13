@@ -26,7 +26,7 @@ export default function UserDropDown() {
 
   if (isPending) {
     return (
-      <div className='pl-2'>
+      <div>
         <Skeleton className='h-9 w-9 rounded-full' />
       </div>
     );
@@ -34,7 +34,7 @@ export default function UserDropDown() {
 
   if (!session?.user) {
     return (
-      <div className='pl-1 md:pl-2'>
+      <div>
         <Link href='/auth/signin' className='hidden md:inline-block'>
           <Button variant='outline'>Sign In</Button>
         </Link>
@@ -52,7 +52,7 @@ export default function UserDropDown() {
   }
 
   return (
-    <div className='pl-2'>
+    <div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <div className='relative'>
