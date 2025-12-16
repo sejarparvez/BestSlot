@@ -12,15 +12,20 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 
+// Define the structure for Nav Item, consistent with NavMain
+interface NavItem {
+  title: string;
+  url: string;
+  // Use a more flexible type for the icon component
+  icon: Icon | React.ElementType;
+}
+
 export function NavSecondary({
   items,
   ...props
 }: {
-  items: {
-    title: string;
-    url: string;
-    icon: Icon;
-  }[];
+  // Use the defined NavItem interface for the items array
+  items: NavItem[];
 } & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
   const pathname = usePathname();
   return (
@@ -35,6 +40,7 @@ export function NavSecondary({
                 className='data-[state=active]:bg-primary/10'
               >
                 <Link href={item.url}>
+                  {/* Render the icon component */}
                   <item.icon />
                   <span>{item.title}</span>
                 </Link>

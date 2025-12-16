@@ -3,11 +3,12 @@
 import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
+import { Prisma } from '@/lib/generated/prisma/client';
 import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
   try {
-    // Check if user is authenticated
+    // Check authentication
     const session = await auth.api.getSession({
       headers: await headers(),
     });
@@ -29,7 +30,39 @@ export async function POST(request: NextRequest) {
       proofImageUrl,
     } = body;
 
-    // Check if user exists and is active
+    // Validate required fields
+    if (!amount || !paymentMethod || !paymentTransactionId || !senderNumber) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 },
+      );
+    }
+
+    // Validate amount
+    if (amount <= 0) {
+      return NextResponse.json(
+        { error: 'Amount must be greater than 0' },
+        { status: 400 },
+      );
+    }
+
+    // Validate payment method
+    const validPaymentMethods = [
+      'BKASH',
+      'NAGAD',
+      'ROCKET',
+      'UPAY',
+      'BANK_TRANSFER',
+      'OTHER',
+    ];
+    if (!validPaymentMethods.includes(paymentMethod)) {
+      return NextResponse.json(
+        { error: 'Invalid payment method' },
+        { status: 400 },
+      );
+    }
+
+    // Check user status and get wallet in single query
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: { wallet: true },
@@ -46,29 +79,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check for duplicate transaction ID
-    const existingTransaction = await prisma.transaction.findFirst({
-      where: {
-        type: 'DEPOSIT',
-        metadata: {
-          path: ['paymentTransactionId'],
-          equals: paymentTransactionId,
-        },
-      },
-    });
-
-    if (existingTransaction) {
-      return NextResponse.json(
-        { error: 'This transaction ID has already been submitted' },
-        { status: 400 },
-      );
-    }
-
-    // Check if user has too many pending requests
-    const pendingCount = await prisma.transaction.count({
+    // Check pending requests limit
+    const pendingCount = await prisma.depositRequest.count({
       where: {
         userId,
-        type: 'DEPOSIT',
         status: 'PENDING',
       },
     });
@@ -96,70 +110,75 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Create transaction with PENDING status
-    const transaction = await prisma.transaction.create({
-      data: {
-        userId,
-        walletId: wallet.id,
-        type: 'DEPOSIT',
-        status: 'PENDING',
-        amount,
-        balanceBefore: wallet.balance,
-        balanceAfter: wallet.balance, // Will be updated when approved
-        currency: 'BDT',
-        description: `Deposit request via ${paymentMethod}`,
-        metadata: {
+    // Create deposit request with unique constraint handling
+    try {
+      const depositRequest = await prisma.depositRequest.create({
+        data: {
+          userId,
+          amount,
           paymentMethod,
-          paymentTransactionId,
           senderNumber,
-          receiverNumber,
-          proofImageUrl,
-          submittedAt: new Date().toISOString(),
+          receiverNumber: receiverNumber || null,
+          proofImageUrl: proofImageUrl || null,
+          status: 'PENDING',
+          paymentTransactionId,
         },
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
           },
         },
-      },
-    });
+      });
 
-    // Create notification for user
-    await prisma.notification.create({
-      data: {
-        userId,
-        type: 'SYSTEM',
-        title: 'Deposit Request Submitted',
-        message: `Your deposit request of ${amount} BDT via ${paymentMethod} has been submitted and is pending approval.`,
-        isRead: false,
+      // Create notification for user
+      await prisma.notification.create({
         data: {
-          transactionId: transaction.id,
-          amount: amount,
+          userId,
+          type: 'SYSTEM',
+          title: 'Deposit Request Submitted',
+          message: `Your deposit request of ${amount} BDT via ${paymentMethod} has been submitted and is pending approval.`,
+          isRead: false,
+          data: {
+            depositRequestId: depositRequest.id,
+            amount: amount,
+            paymentMethod: paymentMethod,
+          },
         },
-      },
-    });
+      });
 
-    // TODO: Send notification to admin (webhook, email, etc.)
-    // await notifyAdminOfNewDeposit(transaction);
+      // TODO: Send notification to admin (webhook, email, etc.)
+      // await notifyAdminOfNewDeposit(depositRequest);
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: 'Deposit request submitted successfully',
-        data: {
-          id: transaction.id,
-          amount: transaction.amount,
-          paymentMethod,
-          status: transaction.status,
-          createdAt: transaction.createdAt,
+      return NextResponse.json(
+        {
+          success: true,
+          message: 'Deposit request submitted successfully',
+          data: {
+            id: depositRequest.id,
+            amount: depositRequest.amount,
+            paymentMethod: depositRequest.paymentMethod,
+            status: depositRequest.status,
+            createdAt: depositRequest.createdAt,
+          },
         },
-      },
-      { status: 201 },
-    );
+        { status: 201 },
+      );
+    } catch (error) {
+      // Handle unique constraint violation for paymentTransactionId
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+          return NextResponse.json(
+            { error: 'This transaction ID has already been submitted' },
+            { status: 400 },
+          );
+        }
+      }
+      throw error;
+    }
   } catch (error) {
     console.error('Deposit request error:', error);
 
@@ -167,77 +186,6 @@ export async function POST(request: NextRequest) {
       {
         error: 'Failed to create deposit request',
         message: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 },
-    );
-  }
-}
-
-// GET - Fetch user's deposit requests (pending transactions)
-export async function GET(request: NextRequest) {
-  try {
-    // Check if user is authenticated
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const userId = session.user.id;
-    const { searchParams } = new URL(request.url);
-    const status = searchParams.get('status');
-    const page = parseInt(searchParams.get('page') || '1', 10);
-    const limit = parseInt(searchParams.get('limit') || '10', 10);
-    const skip = (page - 1) * limit;
-
-    // biome-ignore lint/suspicious/noExplicitAny: this is fine
-    const where: any = {
-      userId,
-      type: 'DEPOSIT',
-    };
-
-    if (status) {
-      where.status = status;
-    }
-
-    const [transactions, total] = await Promise.all([
-      prisma.transaction.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-        skip,
-        take: limit,
-        select: {
-          id: true,
-          amount: true,
-          status: true,
-          createdAt: true,
-          updatedAt: true,
-          description: true,
-          metadata: true,
-          balanceBefore: true,
-          balanceAfter: true,
-        },
-      }),
-      prisma.transaction.count({ where }),
-    ]);
-
-    return NextResponse.json({
-      success: true,
-      data: transactions,
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-    });
-  } catch (error) {
-    console.error('Fetch deposit requests error:', error);
-    return NextResponse.json(
-      {
-        error: 'Failed to fetch deposit requests',
       },
       { status: 500 },
     );

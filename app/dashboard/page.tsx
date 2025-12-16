@@ -14,6 +14,13 @@ export default async function Dashboard() {
   if (!session) {
     redirect('/auth/login');
   }
+  if (session.user.role === 'ADMIN') {
+    return (
+      <div className='px-4 md:px-6 py-4'>
+        <h1>Admin Dashboard</h1>
+      </div>
+    );
+  }
   return (
     <div className='flex flex-1 flex-col'>
       <div className='@container/main flex flex-1 flex-col gap-2'>

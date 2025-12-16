@@ -36,13 +36,13 @@ model User {
   imageId String? @unique
   image   String?
 
-  sessions       Session[]
-  accounts       Account[]
-  wallet         Wallet?
-  bets           Bet[]
-  transactions   Transaction[]
-  notifications  Notification[]
-  depositRequests DepositRequest[]
+  sessions           Session[]
+  accounts           Account[]
+  wallet             Wallet?
+  bets               Bet[]
+  transactions       Transaction[]
+  notifications      Notification[]
+  depositRequests    DepositRequest[]
   withdrawalRequests WithdrawalRequest[]
 
   @@index([email])
@@ -109,14 +109,14 @@ model Wallet {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  balance        Decimal @default(0) @db.Decimal(15, 2)
-  currency       String  @default("BDT")
-  lockedBalance  Decimal @default(0) @db.Decimal(15, 2) // For pending bets
-  
+
+  balance       Decimal @default(0) @db.Decimal(15, 2)
+  currency      String  @default("BDT")
+  lockedBalance Decimal @default(0) @db.Decimal(15, 2) // For pending bets
+
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   transactions Transaction[]
 
   @@index([userId])
@@ -146,7 +146,7 @@ model Transaction {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   type          TransactionType
   status        TransactionStatus @default(PENDING)
   amount        Decimal           @db.Decimal(15, 2)
@@ -154,16 +154,16 @@ model Transaction {
   balanceAfter  Decimal           @db.Decimal(15, 2)
   currency      String            @default("BDT")
   description   String?
-  metadata      Json?             // Payment gateway details, etc.
-  
+  metadata      Json? // Additional info if needed
+
   userId   String
   user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   walletId String
   wallet   Wallet  @relation(fields: [walletId], references: [id], onDelete: Cascade)
   betId    String?
   bet      Bet?    @relation(fields: [betId], references: [id])
-  
-  depositRequest   DepositRequest?
+
+  depositRequest    DepositRequest?
   withdrawalRequest WithdrawalRequest?
 
   @@index([userId])
@@ -197,26 +197,26 @@ model DepositRequest {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   // User submission data
-  amount            Decimal       @db.Decimal(15, 2)
-  paymentMethod     PaymentMethod
-  paymentTransactionId String     // bkash/nagad transaction ID from user
-  senderNumber      String        // User's payment number
-  receiverNumber    String?       // Your account number they sent to
-  
+  amount               Decimal       @db.Decimal(15, 2)
+  paymentMethod        PaymentMethod
+  paymentTransactionId String        @unique // Make it unique for faster duplicate checking
+  senderNumber         String // User's payment number
+  receiverNumber       String? // Your account number they sent to
+
   // Status tracking
-  status            DepositRequestStatus @default(PENDING)
-  
+  status DepositRequestStatus @default(PENDING)
+
   // Admin action
-  reviewedBy        String?       // Admin user ID who approved/rejected
-  reviewedAt        DateTime?
-  rejectionReason   String?
-  adminNotes        String?
-  
+  reviewedBy      String? // Admin user ID who approved/rejected
+  reviewedAt      DateTime?
+  rejectionReason String?
+  adminNotes      String?
+
   // Proof of payment
-  proofImageUrl     String?       // Screenshot of payment
-  
+  proofImageUrl String? // Screenshot of payment
+
   // Relations
   userId        String
   user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -243,23 +243,23 @@ model WithdrawalRequest {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   // User withdrawal data
-  amount            Decimal       @db.Decimal(15, 2)
-  paymentMethod     PaymentMethod
-  accountNumber     String        // User's bkash/nagad number
-  accountName       String?       // Account holder name
-  
+  amount        Decimal       @db.Decimal(15, 2)
+  paymentMethod PaymentMethod
+  accountNumber String // User's bkash/nagad number
+  accountName   String? // Account holder name
+
   // Status tracking
-  status            WithdrawalRequestStatus @default(PENDING)
-  
+  status WithdrawalRequestStatus @default(PENDING)
+
   // Admin processing
-  processedBy       String?       // Admin user ID
-  processedAt       DateTime?
-  paymentTransactionId String?    // Transaction ID after sending payment
-  rejectionReason   String?
-  adminNotes        String?
-  
+  processedBy          String? // Admin user ID
+  processedAt          DateTime?
+  paymentTransactionId String? // Transaction ID after sending payment
+  rejectionReason      String?
+  adminNotes           String?
+
   // Relations
   userId        String
   user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -295,15 +295,15 @@ model Sport {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  name        String    @unique
-  slug        String    @unique
-  type        SportType
-  description String?
-  icon        String?
-  isActive    Boolean   @default(true)
-  displayOrder Int      @default(0)
-  
+
+  name         String    @unique
+  slug         String    @unique
+  type         SportType
+  description  String?
+  icon         String?
+  isActive     Boolean   @default(true)
+  displayOrder Int       @default(0)
+
   leagues League[]
   events  Event[]
 
@@ -316,17 +316,17 @@ model League {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  name        String
-  slug        String
-  country     String?
-  logo        String?
-  isActive    Boolean @default(true)
-  displayOrder Int    @default(0)
-  
+
+  name         String
+  slug         String
+  country      String?
+  logo         String?
+  isActive     Boolean @default(true)
+  displayOrder Int     @default(0)
+
   sportId String
   sport   Sport  @relation(fields: [sportId], references: [id], onDelete: Cascade)
-  
+
   events Event[]
 
   @@unique([sportId, slug])
@@ -348,34 +348,34 @@ model Event {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  name           String
-  slug           String
-  description    String?
-  status         EventStatus @default(SCHEDULED)
-  startTime      DateTime
-  endTime        DateTime?
-  
+
+  name        String
+  slug        String
+  description String?
+  status      EventStatus @default(SCHEDULED)
+  startTime   DateTime
+  endTime     DateTime?
+
   // Participants
-  homeTeam       String
-  awayTeam       String
-  homeTeamLogo   String?
-  awayTeamLogo   String?
-  
+  homeTeam     String
+  awayTeam     String
+  homeTeamLogo String?
+  awayTeamLogo String?
+
   // Results
-  homeScore      Int?
-  awayScore      Int?
-  winner         String?      // "home", "away", "draw"
-  
+  homeScore Int?
+  awayScore Int?
+  winner    String? // "home", "away", "draw"
+
   // Metadata
-  venue          String?
-  metadata       Json?        // Additional event info
-  
+  venue    String?
+  metadata Json? // Additional event info
+
   sportId  String
   sport    Sport   @relation(fields: [sportId], references: [id], onDelete: Cascade)
   leagueId String?
   league   League? @relation(fields: [leagueId], references: [id], onDelete: SetNull)
-  
+
   markets Market[]
   bets    Bet[]
 
@@ -392,9 +392,9 @@ model Event {
 // ============================================
 
 enum MarketType {
-  MATCH_WINNER      // 1X2, Moneyline
-  OVER_UNDER        // Total goals/points
-  HANDICAP          // Asian handicap, Spread
+  MATCH_WINNER // 1X2, Moneyline
+  OVER_UNDER // Total goals/points
+  HANDICAP // Asian handicap, Spread
   BOTH_TEAMS_SCORE
   CORRECT_SCORE
   FIRST_SCORER
@@ -413,20 +413,20 @@ model Market {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   name        String
   type        MarketType
   status      MarketStatus @default(ACTIVE)
   description String?
   line        Decimal?     @db.Decimal(10, 2) // For handicap/over-under
-  
+
   // Settlement
-  settledAt   DateTime?
-  result      String?      // Winning outcome
-  
+  settledAt DateTime?
+  result    String? // Winning outcome
+
   eventId String
   event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  
+
   odds Odd[]
   bets Bet[]
 
@@ -440,15 +440,15 @@ model Odd {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  name        String          // "Home", "Away", "Draw", "Over", "Under", etc.
-  value       Decimal         @db.Decimal(10, 2) // Odds value (e.g., 1.85, 2.50)
-  isActive    Boolean         @default(true)
-  maxStake    Decimal?        @db.Decimal(15, 2)
-  
+
+  name     String // "Home", "Away", "Draw", "Over", "Under", etc.
+  value    Decimal  @db.Decimal(10, 2) // Odds value (e.g., 1.85, 2.50)
+  isActive Boolean  @default(true)
+  maxStake Decimal? @db.Decimal(15, 2)
+
   marketId String
   market   Market @relation(fields: [marketId], references: [id], onDelete: Cascade)
-  
+
   bets Bet[]
 
   @@index([marketId])
@@ -462,7 +462,7 @@ model Odd {
 
 enum BetType {
   SINGLE
-  ACCUMULATOR  // Parlay/Multi
+  ACCUMULATOR // Parlay/Multi
   SYSTEM
 }
 
@@ -479,33 +479,33 @@ model Bet {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   type         BetType
   status       BetStatus @default(PENDING)
   stake        Decimal   @db.Decimal(15, 2)
   totalOdds    Decimal   @db.Decimal(10, 2)
   potentialWin Decimal   @db.Decimal(15, 2)
   actualWin    Decimal?  @db.Decimal(15, 2)
-  
+
   // For accumulator/system bets
-  selections   Int       @default(1) // Number of selections
-  
+  selections Int @default(1) // Number of selections
+
   // Settlement
-  settledAt    DateTime?
-  
+  settledAt DateTime?
+
   // Cashout
   cashoutAt    DateTime?
   cashoutValue Decimal?  @db.Decimal(15, 2)
-  
-  userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  eventId   String?   // For single bets
-  event     Event?    @relation(fields: [eventId], references: [id], onDelete: SetNull)
-  marketId  String?   // For single bets
-  market    Market?   @relation(fields: [marketId], references: [id], onDelete: SetNull)
-  oddId     String?   // For single bets
-  odd       Odd?      @relation(fields: [oddId], references: [id], onDelete: SetNull)
-  
+
+  userId   String
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventId  String? // For single bets
+  event    Event?  @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  marketId String? // For single bets
+  market   Market? @relation(fields: [marketId], references: [id], onDelete: SetNull)
+  oddId    String? // For single bets
+  odd      Odd?    @relation(fields: [oddId], references: [id], onDelete: SetNull)
+
   betSlips     BetSlip[]
   transactions Transaction[]
 
@@ -520,15 +520,15 @@ model Bet {
 model BetSlip {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
-  
+
   eventName  String
   marketName String
   oddName    String
-  oddValue   Decimal  @db.Decimal(10, 2)
-  result     String?  // "won", "lost", "void"
-  
+  oddValue   Decimal @db.Decimal(10, 2)
+  result     String? // "won", "lost", "void"
+
   betId    String
-  bet      Bet     @relation(fields: [betId], references: [id], onDelete: Cascade)
+  bet      Bet    @relation(fields: [betId], references: [id], onDelete: Cascade)
   eventId  String
   marketId String
   oddId    String
@@ -558,13 +558,13 @@ enum NotificationType {
 model Notification {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
-  
+
   type    NotificationType
   title   String
   message String
   isRead  Boolean          @default(false)
-  data    Json?            // Additional data
-  
+  data    Json? // Additional data
+
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -591,29 +591,29 @@ model Promotion {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  type           PromotionType
-  name           String
-  description    String
-  code           String?       @unique
-  
+
+  type        PromotionType
+  name        String
+  description String
+  code        String?       @unique
+
   // Bonus details
-  bonusAmount    Decimal?      @db.Decimal(15, 2)
-  bonusPercent   Decimal?      @db.Decimal(5, 2)
-  maxBonus       Decimal?      @db.Decimal(15, 2)
-  minDeposit     Decimal?      @db.Decimal(15, 2)
-  
+  bonusAmount  Decimal? @db.Decimal(15, 2)
+  bonusPercent Decimal? @db.Decimal(5, 2)
+  maxBonus     Decimal? @db.Decimal(15, 2)
+  minDeposit   Decimal? @db.Decimal(15, 2)
+
   // Requirements
-  wagerRequirement Decimal?    @db.Decimal(5, 2) // e.g., 5x
-  minOdds          Decimal?    @db.Decimal(10, 2)
-  
+  wagerRequirement Decimal? @db.Decimal(5, 2) // e.g., 5x
+  minOdds          Decimal? @db.Decimal(10, 2)
+
   // Validity
-  startDate   DateTime
-  endDate     DateTime
-  isActive    Boolean  @default(true)
-  maxClaims   Int?
-  claimedCount Int     @default(0)
-  
+  startDate    DateTime
+  endDate      DateTime
+  isActive     Boolean  @default(true)
+  maxClaims    Int?
+  claimedCount Int      @default(0)
+
   userPromotions UserPromotion[]
 
   @@index([code])
@@ -632,12 +632,12 @@ model UserPromotion {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  status          UserPromotionStatus @default(ACTIVE)
-  bonusAmount     Decimal             @db.Decimal(15, 2)
-  wagerRemaining  Decimal             @db.Decimal(15, 2)
-  expiresAt       DateTime?
-  
+
+  status         UserPromotionStatus @default(ACTIVE)
+  bonusAmount    Decimal             @db.Decimal(15, 2)
+  wagerRemaining Decimal             @db.Decimal(15, 2)
+  expiresAt      DateTime?
+
   userId      String
   promotionId String
   promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
