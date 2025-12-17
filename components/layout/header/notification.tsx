@@ -1,21 +1,20 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   AlertTriangle,
   Bell,
+  Calendar,
   Check,
   CheckCircle,
+  DollarSign,
+  Gift,
   Info,
   Trash2,
+  TrendingDown,
+  TrendingUp,
   Volume2,
   VolumeX,
   X,
-  DollarSign,
-  TrendingUp,
-  TrendingDown,
-  Gift,
-  Calendar,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -28,10 +27,15 @@ import {
 } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { useNotifications } from '@/services/common/notifications';
 import { cn } from '@/lib/utils';
+import {
+  useClearAllNotificationsMutation,
+  useMarkAllAsReadMutation,
+  useMarkAsReadMutation,
+  useNotifications,
+  useRemoveNotificationMutation,
+} from '@/services/common/notifications';
 import { notificationSound } from '@/utils/notification-sound';
-import { QUERY_KEYS } from '@/lib/constant';
 
 type NotificationType =
   | 'BET_PLACED'
@@ -88,7 +92,6 @@ const NOTIFICATION_COLORS: Record<NotificationType, string> = {
 
 export default function Notifications() {
   const router = useRouter();
-  const queryClient = useQueryClient();
 
   const { isPending, data: notifications, isError } = useNotifications();
 
@@ -98,49 +101,10 @@ export default function Notifications() {
   const unreadCount =
     notifications?.filter((n: Notification) => !n.isRead).length ?? 0;
 
-  const mutationOptions = {
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.NOTIFICATIONS],
-      });
-    },
-  };
-
-  const { mutate: markAsRead } = useMutation<unknown, Error, string>({
-    mutationFn: async (id) => {
-      const response = await fetch(
-        `/api/common/notifications?notificationId=${id}`,
-        {
-          method: 'PATCH',
-        },
-      );
-      if (!response.ok) throw new Error('Failed to mark as read');
-      return response.json();
-    },
-    ...mutationOptions,
-  });
-
-  const { mutate: markAllAsRead } = useMutation<unknown, Error, void>({
-    mutationFn: async () => {
-      const response = await fetch('/api/common/notifications/all', {
-        method: 'PATCH',
-      });
-      if (!response.ok) throw new Error('Failed to mark all as read');
-      return response.json();
-    },
-    ...mutationOptions,
-  });
-
-  const { mutate: clearAll } = useMutation<unknown, Error, void>({
-    mutationFn: async () => {
-      const response = await fetch('/api/common/notifications/all', {
-        method: 'DELETE',
-      });
-      if (!response.ok) throw new Error('Failed to clear notifications');
-      return response.json();
-    },
-    ...mutationOptions,
-  });
+  const { mutate: markAsRead } = useMarkAsReadMutation();
+  const { mutate: markAllAsRead } = useMarkAllAsReadMutation();
+  const { mutate: clearAll } = useClearAllNotificationsMutation();
+  const { mutate: removeNotification } = useRemoveNotificationMutation();
 
   const handleNotificationClick = (notification: Notification) => {
     markAsRead(notification.id);
@@ -180,20 +144,6 @@ export default function Notifications() {
 
     setIsOpen(false);
   };
-
-  const { mutate: removeNotification } = useMutation<unknown, Error, string>({
-    mutationFn: async (id) => {
-      const response = await fetch(
-        `/api/common/notifications?notificationId=${id}`,
-        {
-          method: 'DELETE',
-        },
-      );
-      if (!response.ok) throw new Error('Failed to delete notification');
-      return response.json();
-    },
-    ...mutationOptions,
-  });
 
   const toggleSound = () => {
     setSoundEnabled(!soundEnabled);

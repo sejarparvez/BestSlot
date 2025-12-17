@@ -1,8 +1,9 @@
 // app/api/common/notifications/route.ts
-import { auth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+
 import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {

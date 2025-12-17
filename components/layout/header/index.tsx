@@ -1,9 +1,9 @@
 import { cn } from '@/lib/utils';
 import Balance from './balance';
 import HeaderClient from './header-client';
+import Notifications from './notification';
 import { ModeToggle } from './theme-toggle';
 import UserDropDown from './user';
-import Notifications from './notification';
 
 export default async function Header({
   className,
