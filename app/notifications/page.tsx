@@ -20,11 +20,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -95,7 +91,7 @@ const NOTIFICATION_COLORS: Record<NotificationType, string> = {
 function NotificationsContent() {
   const router = useRouter();
   const { isPending, data: notifications, isError } = useNotifications();
-  const [isOpen, setIsOpen] = useState(false);
+
   const [soundEnabled, setSoundEnabled] = useState(true);
 
   const unreadCount =
@@ -139,7 +135,6 @@ function NotificationsContent() {
           break;
       }
     }
-    setIsOpen(false);
   };
 
   const toggleSound = () => {
@@ -163,32 +158,9 @@ function NotificationsContent() {
   };
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant='ghost'
-          size='icon'
-          className='hover:bg-primary/10 relative rounded-full transition-all'
-        >
-          <Bell className='h-5 w-5' />
-          {unreadCount > 0 && (
-            <Badge
-              variant='destructive'
-              className='absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-xs shadow-sm animate-in zoom-in-50 duration-200'
-            >
-              {unreadCount > 99 ? '99+' : unreadCount}
-            </Badge>
-          )}
-          <span className='sr-only'>Notifications</span>
-        </Button>
-      </PopoverTrigger>
-
-      <PopoverContent
-        className='w-96 p-0 shadow-lg border-0 bg-background/95 backdrop-blur-sm'
-        align='end'
-        sideOffset={8}
-      >
-        <div className='flex items-center justify-between p-4 border-b'>
+    <div>
+      <div className='p-0 shadow-lg border-0 bg-background/95 backdrop-blur-sm'>
+        <div className='flex items-center justify-between p-4 '>
           <div className='flex items-center gap-2'>
             <h3 className='font-semibold text-lg'>Notifications</h3>
             {unreadCount > 0 && (
@@ -353,7 +325,6 @@ function NotificationsContent() {
                 className='w-full text-sm h-8 text-primary hover:text-primary hover:bg-primary/10'
                 onClick={() => {
                   router.push('/notifications');
-                  setIsOpen(false);
                 }}
               >
                 View all notifications
@@ -361,8 +332,8 @@ function NotificationsContent() {
             </div>
           </>
         )}
-      </PopoverContent>
-    </Popover>
+      </div>
+    </div>
   );
 }
 

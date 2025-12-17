@@ -57,7 +57,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className='bg-background text-foreground border-t border-border'>
+    <footer className='bg-background text-foreground border-t border-border md:space-y-12 px-4 md:px-10 mt-20'>
       {/* Top Section - Newsletter */}
       <div className='border-b border-border'>
         <div className='max-w-7xl mx-auto  py-8 sm:py-12'>

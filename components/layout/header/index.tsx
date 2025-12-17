@@ -23,13 +23,13 @@ export default async function Header({
             </div>
 
             {/* Right Section: Search, Theme, Notifications, Cart, User */}
-            <div className='flex flex-none items-center justify-end gap-4'>
-              <div className='flex items-center gap-2'>
+            <div className='flex flex-none items-center justify-end gap-2'>
+              <div className='hidden items-center gap-2 md:flex'>
                 <Balance />
                 <Notifications />
                 <ModeToggle />
-                <UserDropDown />
               </div>
+              <UserDropDown />
             </div>
           </div>
         </div>

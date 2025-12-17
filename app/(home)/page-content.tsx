@@ -14,19 +14,21 @@ import Sports from './sports';
 
 export default function PageContent() {
   return (
-    <div className='space-y-8 md:space-y-12 px-4 md:px-10'>
-      <AnnouncementBanner />
-      <HeroSection />
-      <Menus />
-      <HotGames />
-      <Jackpots />
-      <Slots />
-      <Live />
-      <Sports />
-      <Esports />
-      <Poker />
-      <Fish />
-      <Lottery />
+    <div>
+      <div className='space-y-8 md:space-y-12 px-4 md:px-10'>
+        <AnnouncementBanner />
+        <HeroSection />
+        <Menus />
+        <HotGames />
+        <Jackpots />
+        <Slots />
+        <Live />
+        <Sports />
+        <Esports />
+        <Poker />
+        <Fish />
+        <Lottery />
+      </div>
       <Footer />
     </div>
   );
