@@ -1,24 +1,37 @@
+import Footer from '@/components/layout/footer/footer';
 import Header from '@/components/layout/header';
-import { AppSidebar } from '@/components/layout/header/app-sidebar';
+import AnnouncementBanner from './announcement';
+import Esports from './espots';
+import Fish from './fish';
+import HeroSection from './hero-section';
+import HotGames from './hot-games';
+import Jackpots from './jackpots';
+import Live from './live';
+import Lottery from './lottery';
+import Menus from './menus';
+import Poker from './poker';
+import Slots from './slots';
+import Sports from './sports';
 
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import PageContent from './page-content';
-
-export default function Page() {
+export default function PageContent() {
   return (
-    <SidebarProvider
-      style={
-        {
-          '--sidebar-width': 'calc(var(--spacing) * 72)',
-          '--header-height': 'calc(var(--spacing) * 12)',
-        } as React.CSSProperties
-      }
-    >
-      <Header sidebarOpen />
-      <AppSidebar />
-      <SidebarInset className='pt-20'>
-        <PageContent />
-      </SidebarInset>
-    </SidebarProvider>
+    <div>
+      <Header />
+      <div className='space-y-8 md:space-y-12 px-4 md:px-10 mt-20 md:mt-24'>
+        <AnnouncementBanner />
+        <HeroSection />
+        <Menus />
+        <HotGames />
+        <Jackpots />
+        <Slots />
+        <Live />
+        <Sports />
+        <Esports />
+        <Poker />
+        <Fish />
+        <Lottery />
+      </div>
+      <Footer />
+    </div>
   );
 }

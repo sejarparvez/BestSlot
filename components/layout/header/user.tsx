@@ -1,12 +1,12 @@
 'use client';
 
+import { IconArrowDownCircle, IconUserPlus } from '@tabler/icons-react';
 import {
   LayoutDashboard,
   MessageSquare,
   Moon,
-  Settings,
   Sun,
-  UserIcon,
+  UserCog,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
@@ -131,33 +131,52 @@ export default function UserDropDown() {
 
           <DropdownMenuItem asChild>
             <Link
-              href='/chat'
+              href='/dashboard/profile'
+              className='flex w-full cursor-pointer items-center'
+            >
+              <UserCog className='text-primary/70 mr-2 h-4 w-4' />
+              My Account
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link
+              href='/dashboard/deposit'
+              className='flex w-full cursor-pointer items-center'
+            >
+              <IconArrowDownCircle className='text-primary/70 mr-2 h-4 w-4' />
+              Deposit
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link
+              href='/dashboard/withdraw'
+              className='flex w-full cursor-pointer items-center'
+            >
+              <IconArrowDownCircle className='text-primary/70 mr-2 h-4 w-4' />
+              Withdraw
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link
+              href='/dashboard/invite'
+              className='flex w-full cursor-pointer items-center'
+            >
+              <IconUserPlus className='text-primary/70 mr-2 h-4 w-4' />
+              Invite Friends
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link
+              href='/dashboard/support'
               className='flex w-full cursor-pointer items-center justify-between'
             >
               <div className='flex items-center gap-2'>
                 <MessageSquare className='text-primary/70 mr-2 h-4 w-4' />
-                Messages
+                Customer Support
               </div>
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link
-              href='/dashboard/profile/edit-profile'
-              className='flex w-full cursor-pointer items-center'
-            >
-              <Settings className='text-primary/70 mr-2 h-4 w-4' />
-              Edit Account
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link
-              href='/dashboard/profile'
-              className='flex w-full cursor-pointer items-center'
-            >
-              <UserIcon className='text-primary/70 mr-2 h-4 w-4' />
-              Account Details
-            </Link>
-          </DropdownMenuItem>
+
           <DropdownMenuSeparator />
           <SignOut />
         </DropdownMenuContent>

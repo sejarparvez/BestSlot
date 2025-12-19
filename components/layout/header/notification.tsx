@@ -76,65 +76,65 @@ const NOTIFICATION_CONFIG: Record<
   BET_PLACED: {
     icon: <CheckCircle className='h-4 w-4' />,
     color: 'text-blue-500',
-    bgColor: 'bg-blue-50 border-blue-200',
+    bgColor: ' border-blue-200',
     defaultRoute: '/bets',
   },
   BET_WON: {
     icon: <TrendingUp className='h-4 w-4' />,
     color: 'text-green-500',
-    bgColor: 'bg-green-50 border-green-200',
+    bgColor: ' border-green-200',
     defaultRoute: '/bets',
   },
   BET_LOST: {
     icon: <TrendingDown className='h-4 w-4' />,
     color: 'text-red-500',
-    bgColor: 'bg-red-50 border-red-200',
+    bgColor: ' border-red-200',
     defaultRoute: '/bets',
   },
   DEPOSIT_SUCCESS: {
     icon: <DollarSign className='h-4 w-4' />,
     color: 'text-green-500',
-    bgColor: 'bg-green-50 border-green-200',
+    bgColor: ' border-green-200',
     defaultRoute: '/wallet/deposits',
   },
   DEPOSIT_REJECTED: {
     icon: <X className='h-4 w-4' />,
     color: 'text-red-500',
-    bgColor: 'bg-red-50 border-red-200',
+    bgColor: ' border-red-200',
     defaultRoute: '/wallet/deposits',
   },
   WITHDRAWAL_SUCCESS: {
     icon: <DollarSign className='h-4 w-4' />,
     color: 'text-green-500',
-    bgColor: 'bg-green-50 border-green-200',
+    bgColor: ' border-green-200',
     defaultRoute: '/wallet/withdrawals',
   },
   WITHDRAWAL_REJECTED: {
     icon: <X className='h-4 w-4' />,
     color: 'text-red-500',
-    bgColor: 'bg-red-50 border-red-200',
+    bgColor: ' border-red-200',
     defaultRoute: '/wallet/withdrawals',
   },
   EVENT_STARTING: {
     icon: <Calendar className='h-4 w-4' />,
     color: 'text-purple-500',
-    bgColor: 'bg-purple-50 border-purple-200',
+    bgColor: ' border-purple-200',
   },
   ODDS_CHANGED: {
     icon: <TrendingUp className='h-4 w-4' />,
     color: 'text-orange-500',
-    bgColor: 'bg-orange-50 border-orange-200',
+    bgColor: ' border-orange-200',
   },
   PROMOTION: {
     icon: <Gift className='h-4 w-4' />,
     color: 'text-pink-500',
-    bgColor: 'bg-pink-50 border-pink-200',
+    bgColor: ' border-pink-200',
     defaultRoute: '/promotions',
   },
   SYSTEM: {
     icon: <Info className='h-4 w-4' />,
     color: 'text-blue-500',
-    bgColor: 'bg-blue-50 border-blue-200',
+    bgColor: ' border-blue-200',
   },
 };
 
@@ -314,19 +314,28 @@ function NotificationsContent() {
             </div>
           ) : (
             <div className='divide-y'>
+              {/* ... inside the map function ... */}
               {notifications.map((notification: Notification) => {
                 const config = NOTIFICATION_CONFIG[notification.type];
                 return (
-                  <button
-                    type='button'
+                  // biome-ignore lint/a11y/useSemanticElements: this is fine
+                  <div
                     key={notification.id}
+                    role='button' // Accessibility: Tell screen readers this is clickable
+                    tabIndex={0} // Accessibility: Allow keyboard navigation
                     className={cn(
-                      'group relative w-full p-4 hover:bg-muted/50 transition-all cursor-pointer border-l-4 text-left',
+                      'group relative w-full p-4 hover: transition-all cursor-pointer border-l-4 text-left outline-none focus-visible:bg-muted',
                       !notification.isRead
                         ? `${config.bgColor} border-l-current`
                         : 'border-l-transparent',
                     )}
                     onClick={() => handleNotificationClick(notification)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleNotificationClick(notification);
+                      }
+                    }}
                   >
                     <div className='flex items-start gap-3'>
                       {/* Icon */}
@@ -345,7 +354,6 @@ function NotificationsContent() {
                       <div className='flex-1 min-w-0'>
                         <div className='flex items-start justify-between gap-2'>
                           <div className='flex-1 min-w-0'>
-                            {/* Title and unread indicator */}
                             <div className='flex items-center gap-2 mb-1'>
                               <h4 className='font-semibold text-sm leading-tight truncate'>
                                 {notification.title}
@@ -355,12 +363,10 @@ function NotificationsContent() {
                               )}
                             </div>
 
-                            {/* Message */}
                             <p className='text-xs text-muted-foreground leading-relaxed line-clamp-2'>
                               {notification.message}
                             </p>
 
-                            {/* Footer: Time and amount */}
                             <div className='flex items-center gap-2 mt-2'>
                               <p className='text-xs text-muted-foreground'>
                                 {formatTimeAgo(notification.createdAt)}
@@ -381,12 +387,12 @@ function NotificationsContent() {
                             </div>
                           </div>
 
-                          {/* Delete button */}
+                          {/* Inner Button (Safe now because parent is a div) */}
                           <Button
                             variant='ghost'
                             size='sm'
                             onClick={(e) => {
-                              e.stopPropagation();
+                              e.stopPropagation(); // Prevents triggering the outer div's click
                               removeNotification(notification.id);
                             }}
                             className='opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 p-0 hover:bg-red-100 hover:text-red-600 shrink-0'
@@ -397,7 +403,7 @@ function NotificationsContent() {
                         </div>
                       </div>
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>

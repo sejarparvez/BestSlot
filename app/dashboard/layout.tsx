@@ -1,6 +1,7 @@
+import BreadCrumb from '@/components/layout/dashboard/breadcrumb';
+import Header from '@/components/layout/header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from './app-sidebar';
-import { SiteHeader } from './site-header';
 
 export default function DashboardLayout({
   children,
@@ -18,7 +19,10 @@ export default function DashboardLayout({
     >
       <AppSidebar variant='inset' />
       <SidebarInset>
-        <SiteHeader />
+        <Header fixed={false} navigation={false} />
+        <header className='flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12'>
+          <BreadCrumb />
+        </header>
         {children}
       </SidebarInset>
     </SidebarProvider>

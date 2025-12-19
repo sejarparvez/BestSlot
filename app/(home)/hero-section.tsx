@@ -59,7 +59,7 @@ export default function HeroSection() {
         ]}
         setApi={setApi}
       >
-        <CarouselContent className='h-60'>
+        <CarouselContent className='h-60 md:h-80'>
           {slides.map((slide) => (
             <CarouselItem key={slide.id} className='relative'>
               <Image
@@ -69,7 +69,7 @@ export default function HeroSection() {
                 alt={slide.alt}
                 width={850}
                 height={400}
-                className='block rounded-md dark:brightness-40 h-60 w-full object-cover'
+                className='block rounded-md dark:brightness-40 h-60 md:h-80 w-full object-cover'
               />
             </CarouselItem>
           ))}

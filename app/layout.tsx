@@ -40,6 +40,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             {children}
+
             <Toaster richColors />
             <ReactQueryDevtools initialIsOpen={false} />
           </ThemeProvider>
