@@ -1,5 +1,4 @@
 'use client';
-import Image from 'next/image';
 import {
   Carousel,
   CarouselContent,
@@ -7,6 +6,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
+import Image from 'next/image';
 
 // 1. Define the type for a single slide item
 type SlideType = {
@@ -49,7 +49,7 @@ export default function HotGames() {
   const pairedSlides: GroupedSlides = groupSlides(originalSlides, 2);
 
   return (
-    <div className='relative'>
+    <div className='relative py-2'>
       <Carousel className='group w-full'>
         <h2 className='mb-4 text-2xl font-bold text-primary'>Hot Games</h2>
 

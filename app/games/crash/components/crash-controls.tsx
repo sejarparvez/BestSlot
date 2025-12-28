@@ -28,21 +28,23 @@ export function CrashControls({ gameData, actions }: CrashControlsProps) {
     actions;
   const cashOutText = useTransform(multiplier, (v) => {
     if (playerBet) {
-      return `$${(playerBet * v).toFixed(2)}`;
+      return `${(playerBet * v).toFixed(2)} BDT`;
     }
     return '';
   });
   return (
     <>
-      <div className='grid md:grid-cols-2 gap-6 max-w-3xl mx-auto'>
+      <div className='grid grid-cols-2 gap-6 max-w-3xl mx-auto'>
         <div className='space-y-4'>
           <Label>Bet Amount</Label>
-          <div className='flex items-center gap-3'>
+          <div className='flex items-center md:gap-3'>
             <Button
               variant='outline'
               size='icon'
               onClick={() => setBetAmount(Math.max(1, betAmount - 10))}
-              disabled={playerBet !== null || gameState === 'running'}
+              disabled={
+                playerBet !== null || gameState === 'running' || betAmount <= 10
+              }
               className='shrink-0'
             >
               <Minus className='w-4 h-4' />
@@ -54,23 +56,27 @@ export function CrashControls({ gameData, actions }: CrashControlsProps) {
                 setBetAmount(Math.max(1, Number(e.target.value)))
               }
               disabled={playerBet !== null || gameState === 'running'}
-              min={1}
+              min={10}
               max={balance}
-              className='text-center text-lg font-bold'
+              className='text-center md:text-lg font-bold'
             />
 
             <Button
               variant='outline'
               size='icon'
               onClick={() => setBetAmount(Math.min(balance, betAmount + 10))}
-              disabled={playerBet !== null || gameState === 'running'}
+              disabled={
+                playerBet !== null ||
+                gameState === 'running' ||
+                betAmount > balance
+              }
               className='shrink-0'
             >
               <Plus className='w-4 h-4' />
             </Button>
           </div>
 
-          <div className='flex gap-2'>
+          <div className='grid grid-cols-2 md:grid-cols-4 md:gap-2'>
             {[10, 25, 50, 100].map((amount) => (
               <Button
                 key={amount}
@@ -82,7 +88,7 @@ export function CrashControls({ gameData, actions }: CrashControlsProps) {
                   gameState === 'running' ||
                   amount > balance
                 }
-                className='flex-1'
+                className='flex-1 text-xs md:text-md'
               >
                 {amount}
               </Button>
@@ -92,61 +98,45 @@ export function CrashControls({ gameData, actions }: CrashControlsProps) {
 
         <AnimatePresence mode='wait'>
           {gameState === 'waiting' && !playerBet && (
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
+            <Button
+              onClick={placeBet}
+              disabled={betAmount < 1 || betAmount > balance}
+              className='w-full h-full text-xl font-black bg-linear-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 shadow-xl shadow-blue-600/40 min-h-[120px]'
             >
-              <Button
-                onClick={placeBet}
-                disabled={betAmount < 1 || betAmount > balance}
-                className='w-full h-full text-xl font-black bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 shadow-xl shadow-blue-600/40 min-h-[120px]'
-              >
-                🎯 Place Bet ${betAmount.toFixed(2)}
-              </Button>
-            </motion.div>
+              <div>
+                <p> Place Bet</p>
+                <p> {betAmount.toFixed(2)} BDT</p>
+              </div>
+            </Button>
           )}
 
           {gameState === 'waiting' && playerBet && (
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
+            <Button
+              onClick={startRound}
+              className='w-full h-full text-xl font-black bg-linear-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 shadow-xl shadow-emerald-600/40 min-h-[120px]'
             >
-              <Button
-                onClick={startRound}
-                className='w-full h-full text-xl font-black bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 shadow-xl shadow-emerald-600/40 min-h-[120px]'
-              >
-                🚀 Start Round
-              </Button>
-            </motion.div>
+              🚀 Start Round
+            </Button>
           )}
 
           {gameState === 'running' && playerBet && !cashedOut && (
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
+            <Button
+              onClick={() => cashOut()}
+              className='w-full h-full text-xl font-black bg-linear-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 shadow-xl shadow-amber-600/40 min-h-[120px] animate-pulse'
             >
-              <Button
-                onClick={() => cashOut()}
-                className='w-full h-full text-xl font-black bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 shadow-xl shadow-amber-600/40 min-h-[120px] animate-pulse'
-              >
-                💰 Cash Out <motion.span>{cashOutText}</motion.span>
-              </Button>
-            </motion.div>
+              <div>
+                <p>💰 Cash Out</p>
+                <motion.p>{cashOutText}</motion.p>
+              </div>
+            </Button>
           )}
 
           {gameState === 'running' && cashedOut && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className='flex items-center justify-center min-h-[120px]'
-            >
+            <div className='flex items-center justify-center min-h-30'>
               <p className='text-lg text-emerald-400 font-semibold'>
                 ⏳ Waiting for round to end...
               </p>
-            </motion.div>
+            </div>
           )}
         </AnimatePresence>
       </div>
