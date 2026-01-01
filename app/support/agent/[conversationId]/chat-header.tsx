@@ -2,12 +2,12 @@
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import type { ConversationWithDetails } from '@/hooks/use-chat-data'; // Import the type
 import { usePresenceStore } from '@/lib/store/presenceStore';
 import { getInitials } from '@/lib/utils';
 import { ArrowLeft, MoreVertical, Phone, Video } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
-import { ConversationWithDetails } from '@/hooks/use-chat-data'; // Import the type
 
 interface ChatHeaderProps {
   conversation: ConversationWithDetails | null; // Use the correct type
@@ -50,7 +50,7 @@ export function ChatHeader({ conversation, onBack }: ChatHeaderProps) {
                   </div>
                 ) : (
                   <AvatarFallback className='bg-linear-to-br from-blue-500 to-purple-600 font-medium text-white'>
-                    {getInitials(otherUser)}
+                    {getInitials(otherUser?.name || 'Unknown User')}
                   </AvatarFallback>
                 )}
               </Avatar>
@@ -76,8 +76,8 @@ export function ChatHeader({ conversation, onBack }: ChatHeaderProps) {
                         Offline
                       </span>
                     </>
-                  )
-                ) : ( // If user is not in presence, assume offline or unknown
+                  ) // If user is not in presence, assume offline or unknown
+                ) : (
                   <>
                     <div className='mr-2 h-2 w-2 rounded-full bg-gray-500' />
                     <span className='text-gray-600 dark:text-gray-400'>

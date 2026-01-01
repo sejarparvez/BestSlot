@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getInitials } from '@/lib/utils';
 import { format, isThisWeek, isToday, isYesterday } from 'date-fns';
 import { ChevronLeft, MessageCircle, Search } from 'lucide-react';
 import { headers } from 'next/headers';
@@ -108,15 +109,6 @@ export default async function ChatIndexPage() {
     } else {
       return format(date, 'MMM d');
     }
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
   };
 
   const getPriorityColor = (priority: string) => {

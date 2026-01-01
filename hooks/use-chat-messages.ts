@@ -1,130 +1,170 @@
-// hooks/use-chat-messages.ts
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { Message } from '@prisma/client';
+import type { Message } from '@/lib/generated/prisma/client';
 import type Ably from 'ably';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-// Define the extended message type with sender details, similar to chat-box.tsx
+// Define the extended message type
 type MessageWithSender = Message & {
-    sender: {
-        id: string;
-        name: string | null;
-        image: string | null;
-        role: string;
-    }
-}
+  sender: {
+    id: string;
+    name: string | null;
+    image: string | null;
+    role: string;
+  };
+};
 
 interface UseChatMessagesProps {
-    conversationId: string;
-    session: any; // Use the session type from better-auth
-    ably: Ably.Realtime | null;
-    isConnected: boolean;
-    initialMessages: MessageWithSender[]; // New prop
+  conversationId: string;
+  session: any; // Recommendation: Replace with your actual Session type
+  ably: Ably.Realtime | null;
+  isConnected: boolean;
+  initialMessages: MessageWithSender[];
 }
 
 export function useChatMessages({
-    conversationId,
-    session,
-    ably,
-    isConnected,
-    initialMessages
+  conversationId,
+  session,
+  ably,
+  isConnected,
+  initialMessages,
 }: UseChatMessagesProps) {
-    const [messages, setMessages] = useState<MessageWithSender[]>(initialMessages); // Initialize with prop
-    const [isTyping, setIsTyping] = useState(false); // For other users typing
-    const [isLoading, setIsLoading] = useState(false); // This loading refers to messages sending, not initial fetch
-    const [error, setError] = useState<string | null>(null);
+  const [messages, setMessages] =
+    useState<MessageWithSender[]>(initialMessages);
+  const [isTyping, setIsTyping] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    // Sync initial messages if they change (e.g., refetch from useChatData)
-    useEffect(() => {
-        setMessages(initialMessages);
-    }, [initialMessages]);
+  // 1. Sync initial messages safely.
+  // We use the length and the ID of the last message as a heuristic to avoid
+  // infinite loops caused by referential instability of the initialMessages array.
+  const syncKey = `${initialMessages.length}-${initialMessages[initialMessages.length - 1]?.id}`;
+  useEffect(() => {
+    setMessages(initialMessages);
+  }, [syncKey]);
 
-    // Effect for Ably subscription
-    useEffect(() => {
-        if (!ably || !isConnected || !conversationId) return;
+  // 2. Ably Subscription Effect
+  useEffect(() => {
+    if (!ably || !isConnected || !conversationId) return;
 
-        const channel = ably.channels.get(`chat:${conversationId}`);
+    const channel = ably.channels.get(`chat:${conversationId}`);
 
-        const handleNewMessage = (message: Ably.Types.Message) => {
-            // Only add if not already present (e.g., from optimistic update)
-            if (!messages.some(m => m.id === (message.data as MessageWithSender).id)) {
-                 setMessages(prev => [...prev, message.data as MessageWithSender]);
-            }
-        }
+    const handleNewMessage = (message: Ably.Message) => {
+      const incomingMessage = message.data as MessageWithSender;
 
-        const handleTyping = (message: Ably.Types.Message) => {
-            const { userId, isTyping: typingStatus } = message.data;
-            if (userId !== session?.user?.id) { // Only show typing indicator if it's not the current user
-                setIsTyping(typingStatus);
-                if (typingTimeoutRef.current) {
-                    clearTimeout(typingTimeoutRef.current);
-                }
-                if (typingStatus) {
-                    typingTimeoutRef.current = setTimeout(() => {
-                        setIsTyping(false);
-                    }, 3000); // Stop typing indicator after 3 seconds of no updates
-                }
-            }
-        };
+      // Use functional update to access current state without adding 'messages' to dependencies
+      setMessages((prev) => {
+        const exists = prev.some((m) => m.id === incomingMessage.id);
+        if (exists) return prev;
+        return [...prev, incomingMessage];
+      });
+    };
 
-        channel.subscribe('new-message', handleNewMessage);
-        channel.subscribe('typing', handleTyping);
+    const handleTyping = (message: Ably.Message) => {
+      const { userId, isTyping: typingStatus } = message.data;
 
+      // Ignore our own typing events
+      if (userId === session?.user?.id) return;
 
-        return () => {
-            channel.unsubscribe('new-message', handleNewMessage);
-            channel.unsubscribe('typing', handleTyping);
-            if (typingTimeoutRef.current) {
-                clearTimeout(typingTimeoutRef.current);
-            }
-        };
-    }, [ably, isConnected, conversationId, session?.user?.id, messages]); // Added messages to dependency array
+      setIsTyping(typingStatus);
 
-    const sendMessage = useCallback(async (content: string) => {
-        if (!content.trim() || !conversationId || !session?.user) {
-            return;
-        }
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
 
-        const optimisticMessage: MessageWithSender = {
-            id: window.crypto.randomUUID(),
-            content: content,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            conversationId: conversationId,
-            senderId: session.user.id,
-            isRead: false,
-            readAt: null,
-            type: 'TEXT',
-            fileUrl: null,
-            fileName: null,
-            fileSize: null,
-            sender: {
-                id: session.user.id,
-                name: session.user.name,
-                image: session.user.image,
-                role: 'ADMIN' // Assuming agent is always admin for this side
-            }
-        };
-        setMessages(prev => [...prev, optimisticMessage]);
+      // Auto-clear typing indicator if the user stops sending events
+      if (typingStatus) {
+        typingTimeoutRef.current = setTimeout(() => {
+          setIsTyping(false);
+        }, 3000);
+      }
+    };
 
-        try {
-            await fetch(`/api/chat/conversations/${conversationId}/messages`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content }),
-            });
-        } catch (e) {
-            setError("Failed to send message.");
-            setMessages(prev => prev.filter(m => m.id !== optimisticMessage.id));
-        }
-    }, [conversationId, session]);
+    channel.subscribe('new-message', handleNewMessage);
+    channel.subscribe('typing', handleTyping);
 
-    const retryMessage = useCallback(async (messageId: string) => {
-        console.log(`Retrying message ${messageId}`);
-        // Implement actual retry logic here: find the message, resend its content,
-        // and update its status.
-    }, []);
+    return () => {
+      channel.unsubscribe('new-message', handleNewMessage);
+      channel.unsubscribe('typing', handleTyping);
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+    // messages is removed from here to prevent re-subscribing on every single message
+  }, [ably, isConnected, conversationId, session?.user?.id]);
 
-    return { messages, isTyping, sendMessage, retryMessage, isLoading, error };
+  const sendMessage = useCallback(
+    async (content: string) => {
+      if (!content.trim() || !conversationId || !session?.user) {
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+
+      const optimisticId = window.crypto.randomUUID();
+      const optimisticMessage: MessageWithSender = {
+        id: optimisticId,
+        content: content,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        conversationId: conversationId,
+        senderId: session.user.id,
+        isRead: false,
+        readAt: null,
+        type: 'TEXT',
+        fileUrl: null,
+        fileName: null,
+        fileSize: null,
+        sender: {
+          id: session.user.id,
+          name: session.user.name,
+          image: session.user.image,
+          role: 'ADMIN',
+        },
+      };
+
+      // Apply optimistic update
+      setMessages((prev) => [...prev, optimisticMessage]);
+
+      try {
+        const response = await fetch(
+          `/api/chat/conversations/${conversationId}/messages`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content }),
+          },
+        );
+
+        if (!response.ok) throw new Error('Failed to send');
+      } catch (e) {
+        setError('Failed to send message.');
+        // Remove the optimistic message on failure
+        setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [
+      conversationId,
+      session?.user?.id,
+      session?.user?.name,
+      session?.user?.image,
+    ],
+  );
+
+  const retryMessage = useCallback(async (messageId: string) => {
+    // Logic for retrying would go here
+    console.log(`Retrying message ${messageId}`);
+  }, []);
+
+  return {
+    messages,
+    isTyping,
+    sendMessage,
+    retryMessage,
+    isLoading,
+    error,
+  };
 }

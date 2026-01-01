@@ -1,8 +1,8 @@
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import type { UserForConversationDisplay } from '@/hooks/use-conversations'; // Import the type
 import { getInitials } from '@/lib/utils';
-import { UserForConversationDisplay } from '@/hooks/use-conversations'; // Import the type
 
 interface EmptyChatProps {
   otherUser: UserForConversationDisplay | undefined; // Use the correct type
@@ -15,7 +15,7 @@ export function EmptyChat({ otherUser }: EmptyChatProps) {
         <Avatar className='h-12 w-12'>
           <AvatarImage src={otherUser?.image || undefined} />
           <AvatarFallback className='bg-transparent font-medium text-white'>
-            {getInitials(otherUser)}
+            {getInitials(otherUser?.name || 'User')}
           </AvatarFallback>
         </Avatar>
       </div>
