@@ -1,8 +1,7 @@
-
+import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { headers } from 'next/headers';
 
 /**
  * GET /api/chat/conversations
@@ -39,16 +38,16 @@ export async function GET() {
           },
         },
         messages: {
-            take: 1,
-            orderBy: {
-                createdAt: 'desc'
-            },
-            select: {
-                id: true,
-                senderId: true,
-                content: true,
-                createdAt: true,
-            }
+          take: 1,
+          orderBy: {
+            createdAt: 'desc',
+          },
+          select: {
+            id: true,
+            senderId: true,
+            content: true,
+            createdAt: true,
+          },
         },
         _count: {
           select: {
@@ -58,9 +57,9 @@ export async function GET() {
       },
     });
 
-    const transformedConversations = conversations.map(conv => ({
-        ...conv,
-        messages: conv.messages.length > 0 ? conv.messages : [],
+    const transformedConversations = conversations.map((conv) => ({
+      ...conv,
+      messages: conv.messages.length > 0 ? conv.messages : [],
     }));
 
     return NextResponse.json(transformedConversations);
@@ -89,16 +88,16 @@ export async function POST() {
 
     // Check if user already has an open conversation
     const existingConversation = await prisma.conversation.findFirst({
-        where: {
-            userId: session.user.id,
-            status: {
-                in: ['OPEN', 'IN_PROGRESS']
-            }
-        }
-    })
+      where: {
+        userId: session.user.id,
+        status: {
+          in: ['OPEN', 'IN_PROGRESS'],
+        },
+      },
+    });
 
     if (existingConversation) {
-        return NextResponse.json(existingConversation);
+      return NextResponse.json(existingConversation);
     }
 
     const newConversation = await prisma.conversation.create({

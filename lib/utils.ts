@@ -1,4 +1,5 @@
 import { type ClassValue, clsx } from 'clsx';
+import { format, isThisWeek, isToday, isYesterday } from 'date-fns';
 import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
@@ -26,3 +27,30 @@ export function getInitials(name?: string | null): string {
   } // Handles single-word names
   return `${words[0][0].toUpperCase()}${words[words.length - 1][0].toUpperCase()}`; // Handles multi-word names
 }
+
+export const formatTime = (date: Date) => {
+  if (isToday(date)) {
+    return format(date, 'HH:mm');
+  } else if (isYesterday(date)) {
+    return 'Yesterday';
+  } else if (isThisWeek(date)) {
+    return format(date, 'EEE');
+  } else {
+    return format(date, 'MMM d');
+  }
+};
+
+export const getPriorityColor = (priority: string) => {
+  switch (priority) {
+    case 'URGENT':
+      return 'bg-red-500';
+    case 'HIGH':
+      return 'bg-orange-500';
+    case 'NORMAL':
+      return 'bg-blue-500';
+    case 'LOW':
+      return 'bg-gray-500';
+    default:
+      return 'bg-blue-500';
+  }
+};

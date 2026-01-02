@@ -1,15 +1,14 @@
+import { ChevronLeft, MessageCircle, Search } from 'lucide-react';
+import { headers } from 'next/headers';
+import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { getInitials } from '@/lib/utils';
-import { format, isThisWeek, isToday, isYesterday } from 'date-fns';
-import { ChevronLeft, MessageCircle, Search } from 'lucide-react';
-import { headers } from 'next/headers';
-import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import { formatTime, getInitials, getPriorityColor } from '@/lib/utils';
 
 interface User {
   id: string;
@@ -97,33 +96,6 @@ export default async function ChatIndexPage() {
 
   const getRecipient = (conv: ConversationDisplay) => {
     return conv.user; // Always return the user who started the conversation
-  };
-
-  const formatTime = (date: Date) => {
-    if (isToday(date)) {
-      return format(date, 'HH:mm');
-    } else if (isYesterday(date)) {
-      return 'Yesterday';
-    } else if (isThisWeek(date)) {
-      return format(date, 'EEE');
-    } else {
-      return format(date, 'MMM d');
-    }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'URGENT':
-        return 'bg-red-500';
-      case 'HIGH':
-        return 'bg-orange-500';
-      case 'NORMAL':
-        return 'bg-blue-500';
-      case 'LOW':
-        return 'bg-gray-500';
-      default:
-        return 'bg-blue-500';
-    }
   };
 
   return (

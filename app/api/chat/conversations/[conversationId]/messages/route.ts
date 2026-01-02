@@ -1,8 +1,8 @@
+import { headers } from 'next/headers';
+import { NextResponse } from 'next/server';
 import { ably } from '@/lib/ably';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { headers } from 'next/headers';
-import { NextResponse } from 'next/server';
 
 /**
  * POST /api/chat/conversations/[conversationId]/messages

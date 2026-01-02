@@ -6,17 +6,16 @@ import { useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useChatData } from '@/hooks/use-chat-data';
 import { useChatMessages } from '@/hooks/use-chat-messages';
 import { useSession } from '@/lib/auth-client';
 import { usePresenceStore } from '@/lib/store/presenceStore';
-
 import { ChatHeader } from './chat-header';
 import { ChatInput } from './chat-input';
 import { ChatMessages } from './chat-messages';
 import { ChatLoadingSkeleton } from './chat-skeleton';
 import { ConnectionStatus } from './connection-status';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { UserContext } from './user-context';
 
 export default function ChatConversation() {
@@ -66,6 +65,12 @@ export default function ChatConversation() {
     router.push('/support/agent');
   };
 
+  const handleRetryConnection = () => {
+    if (ably) {
+      ably.connect();
+    }
+  };
+
   const isLoading = isDataLoading || isSessionPending;
   const error = dataError || messagesError;
 
@@ -102,6 +107,11 @@ export default function ChatConversation() {
     );
   }
 
+  // Handle case where conversation is not found after loading
+  if (!conversation) {
+    return <ChatLoadingSkeleton />;
+  }
+
   if (authStatus === 'unauthenticated') {
     // Use derived authStatus
     return null;
@@ -114,7 +124,7 @@ export default function ChatConversation() {
 
         <ConnectionStatus
           connectionError={connectionError}
-          connectionState={ably?.connection?.state || 'disconnected'}
+          onRetry={handleRetryConnection}
         />
 
         <ChatMessages

@@ -15,8 +15,7 @@ import {
 const Picker = dynamic(() => import('@emoji-mart/react'), { ssr: false });
 
 interface EmojiPickerProps {
-  // biome-ignore lint: error
-  onEmojiSelect: (emoji: any) => void;
+  onEmojiSelect: (emoji: { native: string }) => void;
   isOpen: boolean;
   onToggle: () => void;
 }

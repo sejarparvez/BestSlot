@@ -1,9 +1,9 @@
-import Footer from '@/components/layout/footer/footer';
-import Header from '@/components/layout/header';
-import { auth } from '@/lib/auth';
 import { Headphones, ShieldCheck, Zap } from 'lucide-react';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
+import Footer from '@/components/layout/footer/footer';
+import Header from '@/components/layout/header';
+import { auth } from '@/lib/auth';
 import { ChatBox } from './chat-box';
 import { FaqSection } from './faq-section';
 

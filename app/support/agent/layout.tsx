@@ -1,8 +1,8 @@
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type React from 'react';
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { auth } from '@/lib/auth';
 import { ChatSidebar } from './chat-sidebar';
 
 export default async function ChatLayout({

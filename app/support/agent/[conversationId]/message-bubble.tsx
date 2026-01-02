@@ -1,13 +1,12 @@
 'use client';
 
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { cn, getInitials } from '@/lib/utils';
 import { format } from 'date-fns';
 import { AlertCircle, Check, CheckCheck } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
-import { MessageWithSender } from '@/hooks/use-chat-messages'; // Import the type
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import type { MessageWithSender } from '@/hooks/use-chat-messages'; // Import the type
+import { cn, getInitials } from '@/lib/utils';
 
 interface MessageBubbleProps {
   message: MessageWithSender; // Use the correct type
@@ -15,11 +14,7 @@ interface MessageBubbleProps {
   onRetry: (messageId: string) => void;
 }
 
-export function MessageBubble({
-  message,
-  isCurrentUser,
-  onRetry,
-}: MessageBubbleProps) {
+export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
   const [imageError, setImageError] = useState(false);
 
   const formatMessageTime = (date: Date) => {
@@ -63,7 +58,7 @@ export function MessageBubble({
           </div>
         ) : (
           <AvatarFallback className='text-xs'>
-            {getInitials(message.sender)}
+            {getInitials(message.sender.name)}
           </AvatarFallback>
         )}
       </Avatar>
@@ -74,17 +69,7 @@ export function MessageBubble({
     if (!isCurrentUser) return null;
     return (
       <div className='flex items-center gap-1'>
-        {getMessageStatusIcon(message.status)}
-        {message.status === 'failed' && (
-          <Button
-            size='sm'
-            variant='ghost'
-            className='h-auto p-0 text-xs hover:bg-transparent hover:text-current'
-            onClick={() => onRetry(message.id)}
-          >
-            Retry
-          </Button>
-        )}
+        {getMessageStatusIcon(message.content)}
       </div>
     );
   };

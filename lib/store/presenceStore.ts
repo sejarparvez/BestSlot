@@ -1,5 +1,7 @@
+import type Ably from 'ably';
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
+import type { Session } from '@/lib/auth-client';
 
 export interface PresenceUser {
   id: string;
@@ -10,8 +12,7 @@ export interface PresenceUser {
   lastSeen: number; // timestamp
   clientId: string;
   connectionId: string;
-  // biome-ignore lint: error
-  data?: any; // additional presence data
+  data?: unknown; // additional presence data
 }
 
 interface PresenceState {
@@ -22,10 +23,8 @@ interface PresenceState {
   connectionError: string | null;
 
   // Ably instances
-  // biome-ignore lint: error
-  ably: any;
-  // biome-ignore lint: error
-  presenceChannel: any;
+  ably: Ably.Realtime | null;
+  presenceChannel: Ably.RealtimeChannel | null;
 
   // Computed getters
   getOnlineUsers: () => PresenceUser[];
@@ -34,27 +33,20 @@ interface PresenceState {
   getUsersByStatus: (status: string) => PresenceUser[];
 
   // Actions
-  // biome-ignore lint: error
-  setConnection: (ably: any, channel: any) => void;
+  setConnection: (ably: Ably.Realtime, channel: Ably.RealtimeChannel) => void;
   setConnectionState: (connected: boolean, error?: string) => void;
   setCurrentUserStatus: (status: 'online' | 'away' | 'busy') => void;
 
   // Ably presence handlers
-  // biome-ignore lint: error
-  handlePresenceEnter: (member: any) => void;
-  // biome-ignore lint: error
-  handlePresenceLeave: (member: any) => void;
-  // biome-ignore lint: error
-  handlePresenceUpdate: (member: any) => void;
-  // biome-ignore lint: error
-  syncPresenceMembers: (members: any[]) => void;
+  handlePresenceEnter: (member: Ably.PresenceMessage) => void;
+  handlePresenceLeave: (member: Ably.PresenceMessage) => void;
+  handlePresenceUpdate: (member: Ably.PresenceMessage) => void;
+  syncPresenceMembers: (members: Ably.PresenceMessage[]) => void;
 
   // Presence methods
-  // biome-ignore lint: error
-  initializePresence: (session: any) => Promise<void>;
+  initializePresence: (session: Session | null) => Promise<void>;
   updateStatus: (status: 'online' | 'away' | 'busy') => Promise<void>;
-  // biome-ignore lint: error
-  enterPresence: (userData: any) => Promise<void>;
+  enterPresence: (userData: unknown) => Promise<void>;
   leavePresence: () => Promise<void>;
   cleanup: () => Promise<void>;
 }
@@ -211,7 +203,7 @@ export const usePresenceStore = create<PresenceState>()(
           await get().enterPresence({
             id: session.user.id,
             name: session.user.name,
-            username: session.user.username,
+            email: session.user.email,
             image: session.user.image,
             status: 'online',
             timestamp: Date.now(),
@@ -222,7 +214,6 @@ export const usePresenceStore = create<PresenceState>()(
             const presenceSet = await channel.presence.get();
             get().syncPresenceMembers(presenceSet);
           } catch (error) {
-            // biome-ignore lint: error
             console.error('Failed to get presence members:', error);
           }
 
@@ -236,17 +227,15 @@ export const usePresenceStore = create<PresenceState>()(
         ably.connection.on('suspended', () => {
           get().setConnectionState(false);
         });
-        // biome-ignore lint: error
-        ably.connection.on('failed', (error: any) => {
-          get().setConnectionState(false, error.message);
+        ably.connection.on('failed', (_error) => {
+          get().setConnectionState(false, 'Ably connection failed');
         });
 
         ably.connection.on('closed', () => {
           get().setConnectionState(false);
         });
-        // biome-ignore lint: error
-      } catch (error: any) {
-        get().setConnectionState(false, error.message);
+      } catch (error: unknown) {
+        get().setConnectionState(false, (error as Error).message);
       }
     },
 
@@ -258,7 +247,6 @@ export const usePresenceStore = create<PresenceState>()(
       try {
         await presenceChannel.presence.enter(userData);
       } catch (error) {
-        // biome-ignore lint: error
         console.error('Failed to enter presence:', error);
         throw error;
       }
@@ -281,7 +269,6 @@ export const usePresenceStore = create<PresenceState>()(
 
         get().setCurrentUserStatus(status);
       } catch (error) {
-        // biome-ignore lint: error
         console.error('Failed to update status:', error);
         throw error;
       }
@@ -295,7 +282,6 @@ export const usePresenceStore = create<PresenceState>()(
       try {
         await presenceChannel.presence.leave();
       } catch (error) {
-        // biome-ignore lint: error
         console.error('Failed to leave presence:', error);
       }
     },
@@ -312,7 +298,6 @@ export const usePresenceStore = create<PresenceState>()(
           // Unsubscribe from events
           presenceChannel.presence.unsubscribe();
         } catch (error) {
-          // biome-ignore lint: error
           console.error('Error during presence cleanup:', error);
         }
       }
@@ -322,7 +307,6 @@ export const usePresenceStore = create<PresenceState>()(
         try {
           ably.close();
         } catch (error) {
-          // biome-ignore lint: error
           console.error('Error closing Ably:', error);
         }
       }

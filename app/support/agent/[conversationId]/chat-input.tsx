@@ -1,25 +1,25 @@
-'use client';
-
+import type Ably from 'ably';
 import { Mic, Paperclip, Send } from 'lucide-react';
 import { type FormEvent, useEffect, useRef, useState } from 'react';
-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import type { ConversationWithDetails } from '@/hooks/use-chat-data';
+import type { useSession } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
-import { Session } from 'better-auth'; // Import Session type
 
 import { EmojiPicker } from './emoji-picker';
 
+// Infer the session type from the useSession hook
+type SessionData = ReturnType<typeof useSession>['data'];
+
 interface ChatInputProps {
-  // biome-ignore lint: error
-  conversation: any;
+  conversation: ConversationWithDetails | null;
   onSendMessage: (content: string) => Promise<void>;
   isConnected: boolean;
   connectionState: string;
-  // biome-ignore lint: error
-  ably?: any;
-  session?: Session; // Use imported Session type
+  ably: Ably.Realtime | undefined | null;
+  session?: SessionData;
 }
 
 export function ChatInput({
@@ -35,13 +35,13 @@ export function ChatInput({
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  // biome-ignore lint: error
-  const channelRef = useRef<any>(null);
+  const channelRef = useRef<Ably.RealtimeChannel | null>(null);
   const conversationId = conversation?.id;
 
   // Setup channel for typing events
   useEffect(() => {
-    if (!ably || !isConnected || !conversationId) { // Removed getChannel
+    if (!ably || !isConnected || !conversationId) {
+      // Removed getChannel
       return;
     }
 
@@ -120,8 +120,7 @@ export function ChatInput({
     await onSendMessage(content);
   };
 
-  // biome-ignore lint: error
-  const handleEmojiSelect = (emoji: any) => {
+  const handleEmojiSelect = (emoji: { native: string }) => {
     const newContent = messageContent + emoji.native;
     setMessageContent(newContent);
     inputRef.current?.focus();
@@ -159,7 +158,7 @@ export function ChatInput({
     };
   }, []);
 
-  const otherUser = conversation?.otherUser;
+  const otherUser = conversation?.user;
 
   return (
     <div className='border-border/40 bg-background/95 supports-backdrop-filter:bg-background/60 flex-none border-t backdrop-blur'>

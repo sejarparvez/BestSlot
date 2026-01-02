@@ -7,10 +7,13 @@ import { Card, CardContent } from '@/components/ui/card';
 
 interface ConnectionStatusProps {
   connectionError: string | null;
-  connectionState: string;
+  onRetry: () => void;
 }
 
-export function ConnectionStatus({ connectionError }: ConnectionStatusProps) {
+export function ConnectionStatus({
+  connectionError,
+  onRetry,
+}: ConnectionStatusProps) {
   if (!connectionError) {
     return null;
   }
@@ -23,7 +26,7 @@ export function ConnectionStatus({ connectionError }: ConnectionStatusProps) {
             <AlertCircle className='text-destructive h-4 w-4' />
             <span className='text-destructive text-sm'>{connectionError}</span>
           </div>
-          <Button size='sm' variant='outline'>
+          <Button size='sm' variant='outline' onClick={onRetry}>
             <RefreshCw className='mr-1 h-3 w-3' />
             Retry
           </Button>

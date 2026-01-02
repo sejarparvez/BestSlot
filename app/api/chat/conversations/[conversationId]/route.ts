@@ -1,7 +1,7 @@
-import { auth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 /**
  * GET /api/chat/conversations/[conversationId]
@@ -10,7 +10,7 @@ import { NextResponse } from 'next/server';
  * A user can only access their own conversation.
  */
 export async function GET(
-  req: Request,
+  _req: Request,
   { params }: { params: Promise<{ conversationId: string }> },
 ) {
   try {

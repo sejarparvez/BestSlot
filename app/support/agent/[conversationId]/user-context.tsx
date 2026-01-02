@@ -1,3 +1,4 @@
+import { AlertCircle, Clock, Trophy, Wallet } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
@@ -6,7 +7,6 @@ import {
 } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { AlertCircle, Clock, Trophy, Wallet } from 'lucide-react';
 
 export function UserContext() {
   return (
@@ -45,9 +45,7 @@ export function UserContext() {
               <Card className='border-none bg-background shadow-none'>
                 <CardContent className='p-3'>
                   <Wallet className='mb-1 h-3 w-3 text-primary' />
-                  <p className='text-[10px] text-muted-foreground'>
-                    Balance
-                  </p>
+                  <p className='text-[10px] text-muted-foreground'>Balance</p>
                   <p className='text-xs font-bold'>$4,820.50</p>
                 </CardContent>
               </Card>

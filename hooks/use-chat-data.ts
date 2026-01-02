@@ -1,7 +1,7 @@
 // hooks/use-chat-data.ts
 
-import type { Conversation, Message } from '@/lib/generated/prisma/client';
 import { useCallback, useEffect, useState } from 'react';
+import type { Conversation, Message } from '@/lib/generated/prisma/client';
 
 // Define the extended message type with sender details, similar to chat-box.tsx
 type MessageWithSender = Message & {
@@ -51,8 +51,8 @@ export function useChatData(conversationId: string, sessionStatus: string) {
         throw new Error('Failed to fetch conversation data.');
       const fullConvData: ConversationWithDetails = await messagesRes.json();
       setConversation(fullConvData);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError((e as Error).message);
     } finally {
       setIsLoading(false);
     }

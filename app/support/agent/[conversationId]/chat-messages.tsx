@@ -4,8 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { ConversationWithDetails } from '@/hooks/use-chat-data';
 import type { MessageWithSender } from '@/hooks/use-chat-messages';
-import type { UserForConversationDisplay } from '@/hooks/use-conversations'; // Import for EmptyChat and TypingIndicator
-import type { Session } from 'better-auth';
+import type { useSession } from '@/lib/auth-client';
 import { format, isToday, isYesterday } from 'date-fns';
 import { useEffect, useRef } from 'react';
 
@@ -13,10 +12,18 @@ import { EmptyChat } from './empty-chat';
 import { MessageBubble } from './message-bubble';
 import { TypingIndicator } from './typing-indicator';
 
+export type OtherUser = {
+  name: string | null;
+  image: string | null;
+};
+
+// Infer the session type from the useSession hook
+type SessionData = ReturnType<typeof useSession>['data'];
+
 interface ChatMessagesProps {
   messages: MessageWithSender[];
   conversation: ConversationWithDetails | null;
-  session: Session | null;
+  session: SessionData;
   isTyping: boolean;
   onRetryMessage: (messageId: string) => void;
 }
@@ -32,7 +39,7 @@ export function ChatMessages({
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping]);
+  }, []);
 
   const formatMessageDate = (date: Date) => {
     if (isToday(date)) {
@@ -44,7 +51,7 @@ export function ChatMessages({
     }
   };
 
-  const otherUser: UserForConversationDisplay | undefined = conversation?.user;
+  const otherUser: OtherUser | undefined = conversation?.user;
 
   return (
     <div className='flex-1 overflow-hidden'>

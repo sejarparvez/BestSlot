@@ -2,10 +2,11 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/utils';
-import { UserForConversationDisplay } from '@/hooks/use-conversations'; // Import the type
+
+import type { OtherUser } from './chat-messages';
 
 interface TypingIndicatorProps {
-  otherUser: UserForConversationDisplay | undefined; // Use the correct type
+  otherUser: OtherUser | undefined;
 }
 
 export function TypingIndicator({ otherUser }: TypingIndicatorProps) {
@@ -15,7 +16,7 @@ export function TypingIndicator({ otherUser }: TypingIndicatorProps) {
         <Avatar className='h-8 w-8 shadow-sm'>
           <AvatarImage src={otherUser?.image || undefined} />
           <AvatarFallback className='bg-linear-to-br from-blue-500 to-purple-600 text-xs font-medium text-white'>
-            {getInitials(otherUser)}
+            {getInitials(otherUser?.name)}
           </AvatarFallback>
         </Avatar>
         <div className='border-border/50 bg-background/80 rounded-2xl rounded-bl-md border px-4 py-3 shadow-lg backdrop-blur-sm'>

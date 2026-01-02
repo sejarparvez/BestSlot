@@ -1,9 +1,10 @@
-import type { Message } from '@/lib/generated/prisma/client';
 import type Ably from 'ably';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { useSession } from '@/lib/auth-client';
+import type { Message } from '@/lib/generated/prisma/client';
 
 // Define the extended message type
-type MessageWithSender = Message & {
+export type MessageWithSender = Message & {
   sender: {
     id: string;
     name: string | null;
@@ -12,9 +13,12 @@ type MessageWithSender = Message & {
   };
 };
 
+// Infer the session type from the useSession hook
+type SessionData = ReturnType<typeof useSession>['data'];
+
 interface UseChatMessagesProps {
   conversationId: string;
-  session: any; // Recommendation: Replace with your actual Session type
+  session: SessionData;
   ably: Ably.Realtime | null;
   isConnected: boolean;
   initialMessages: MessageWithSender[];
@@ -39,6 +43,7 @@ export function useChatMessages({
   // We use the length and the ID of the last message as a heuristic to avoid
   // infinite loops caused by referential instability of the initialMessages array.
   const syncKey = `${initialMessages.length}-${initialMessages[initialMessages.length - 1]?.id}`;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: syncKey is derived from initialMessages
   useEffect(() => {
     setMessages(initialMessages);
   }, [syncKey]);
@@ -119,7 +124,7 @@ export function useChatMessages({
         sender: {
           id: session.user.id,
           name: session.user.name,
-          image: session.user.image,
+          image: session.user.image ?? null,
           role: 'ADMIN',
         },
       };
@@ -138,7 +143,7 @@ export function useChatMessages({
         );
 
         if (!response.ok) throw new Error('Failed to send');
-      } catch (e) {
+      } catch (_e) {
         setError('Failed to send message.');
         // Remove the optimistic message on failure
         setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
@@ -146,12 +151,7 @@ export function useChatMessages({
         setIsLoading(false);
       }
     },
-    [
-      conversationId,
-      session?.user?.id,
-      session?.user?.name,
-      session?.user?.image,
-    ],
+    [conversationId, session?.user],
   );
 
   const retryMessage = useCallback(async (messageId: string) => {

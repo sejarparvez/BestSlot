@@ -1,6 +1,7 @@
 'use client';
 
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { ArrowLeft, MoreVertical, Phone, Video } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   Drawer,
@@ -13,9 +14,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import type { ConversationWithDetails } from '@/hooks/use-chat-data'; // Import the type
 import { usePresenceStore } from '@/lib/store/presenceStore';
 import { getInitials } from '@/lib/utils';
-import { ArrowLeft, MoreVertical, Phone, Video } from 'lucide-react';
-import Image from 'next/image';
-import { useState } from 'react';
 import { UserContext } from './user-context';
 
 interface ChatHeaderProps {
@@ -26,8 +24,9 @@ interface ChatHeaderProps {
 export function ChatHeader({ conversation, onBack }: ChatHeaderProps) {
   const { getUserById } = usePresenceStore();
   const otherUser = conversation?.user; // Change to conversation.user
-  const isOtherUserOnline = getUserById(otherUser?.id)?.status === 'online';
-  const [imageError, setImageError] = 'useState(false);'
+  const isOtherUserOnline =
+    otherUser && getUserById(otherUser?.id)?.status === 'online';
+  console.log(otherUser);
 
   return (
     <div className='border-border/40 bg-background/95 supports-backdrop-filter:bg-background/60 flex-none border-b backdrop-blur'>
@@ -45,23 +44,10 @@ export function ChatHeader({ conversation, onBack }: ChatHeaderProps) {
           <div className='flex items-center gap-3'>
             <div className='relative'>
               <Avatar className='border-background h-10 w-10 border-2 shadow-lg'>
-                {otherUser?.image && !imageError ? (
-                  <div className='relative h-full w-full overflow-hidden rounded-full'>
-                    <Image
-                      src={otherUser.image}
-                      alt='name'
-                      fill
-                      className='object-cover'
-                      sizes='40px'
-                      onError={() => setImageError(true)}
-                      onLoad={() => setImageError(false)}
-                    />
-                  </div>
-                ) : (
-                  <AvatarFallback className='bg-linear-to-br from-blue-500 to-purple-600 font-medium text-white'>
-                    {getInitials(otherUser?.name || 'Unknown User')}
-                  </AvatarFallback>
-                )}
+                <AvatarImage src={otherUser?.image || undefined} />
+                <AvatarFallback className='bg-linear-to-br from-blue-500 to-purple-600 text-xs font-medium text-white'>
+                  {getInitials(otherUser?.name)}
+                </AvatarFallback>
               </Avatar>
             </div>
 
@@ -70,7 +56,7 @@ export function ChatHeader({ conversation, onBack }: ChatHeaderProps) {
                 {otherUser?.name || 'Unknown User'}
               </h2>
               <div className='flex items-center text-sm'>
-                {getUserById(otherUser?.id) ? ( // Check if otherUser is found in presence
+                {getUserById(otherUser?.id as string) ? ( // Check if otherUser is found in presence
                   isOtherUserOnline ? (
                     <>
                       <div className='mr-2 h-2 w-2 rounded-full bg-emerald-500' />

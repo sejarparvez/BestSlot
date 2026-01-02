@@ -1,8 +1,8 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { useSession } from '@/lib/auth-client';
 import { usePresenceStore } from '@/lib/store/presenceStore';
-import { useEffect, useRef } from 'react';
 
 interface PresenceProviderProps {
   children: React.ReactNode;

@@ -1,11 +1,12 @@
 // hooks/use-conversations.ts
 'use client';
 
-import { useSession } from '@/lib/auth-client';
-import { usePresenceStore } from '@/lib/store/presenceStore';
+import type Ably from 'ably';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
-import { Conversation } from '@prisma/client'; // Import Prisma's Conversation type
+import { useSession } from '@/lib/auth-client';
+import type { Conversation } from '@/lib/generated/prisma/client'; // Import Prisma's Conversation type
+import { usePresenceStore } from '@/lib/store/presenceStore';
 
 interface UserForConversationDisplay {
   id: string;
@@ -33,7 +34,6 @@ export type ConversationDisplay = Conversation & {
   };
 };
 
-
 export function useConversations() {
   const { data: session, isPending: isSessionPending } = useSession();
   const router = useRouter();
@@ -56,8 +56,8 @@ export function useConversations() {
       }
       const data: ConversationDisplay[] = await response.json(); // Cast to new type
       setConversations(data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError((err as Error).message);
     } finally {
       setIsLoading(false);
     }
@@ -77,9 +77,9 @@ export function useConversations() {
       return;
     }
 
-    const channel = ably.channels.get(`user:${currentUserId}`);
+    const channel = ably.channels.get(`agent:${currentUserId}`);
 
-    const handleNewMessage = (message: any) => {
+    const handleNewMessage = (message: Ably.Message) => {
       // The message data will contain the updated conversation
       const updatedConversation: ConversationDisplay = message.data;
       setConversations((prev) => {

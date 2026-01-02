@@ -1,8 +1,8 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { useSession } from '@/lib/auth-client';
 import { usePresenceStore } from '@/lib/store/presenceStore';
-import { useEffect, useRef } from 'react';
 
 interface PresenceProviderProps {
   children: React.ReactNode;
@@ -10,7 +10,11 @@ interface PresenceProviderProps {
 
 export function PresenceProvider({ children }: PresenceProviderProps) {
   const { data: session, isPending } = useSession();
-  const status = isPending ? 'loading' : session ? 'authenticated' : 'unauthenticated';
+  const status = isPending
+    ? 'loading'
+    : session
+      ? 'authenticated'
+      : 'unauthenticated';
   const { initializePresence, cleanup } = usePresenceStore();
   const inititalizedRef = useRef(false);
 
@@ -27,7 +31,6 @@ export function PresenceProvider({ children }: PresenceProviderProps) {
       cleanup();
     }
   }, [session, status, initializePresence, cleanup, session?.user?.id]);
-
 
   useEffect(() => {
     const handleBeforeUnload = () => {

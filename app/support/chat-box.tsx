@@ -1,5 +1,18 @@
 'use client';
 
+import type Ably from 'ably';
+import {
+  Clock,
+  CreditCard,
+  Headset,
+  HelpCircle,
+  MessageSquare,
+  Send,
+  Shield,
+  User,
+  X,
+} from 'lucide-react';
+import * as React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,18 +29,6 @@ import { useSession } from '@/lib/auth-client';
 import type { Conversation, Message } from '@/lib/generated/prisma/client';
 import { usePresenceStore } from '@/lib/store/presenceStore';
 import { cn } from '@/lib/utils';
-import {
-  Clock,
-  CreditCard,
-  Headset,
-  HelpCircle,
-  MessageSquare,
-  Send,
-  Shield,
-  User,
-  X,
-} from 'lucide-react';
-import * as React from 'react';
 
 const QUICK_ACTIONS = [
   { label: 'Account Help', icon: User },
@@ -47,7 +48,7 @@ type MessageWithSender = Message & {
   sender: {
     id: string;
     name: string | null;
-    image: string | null;
+    image: string | undefined | null;
     role: string;
   };
 };
@@ -70,6 +71,7 @@ export function ChatBox() {
     scrollAnchorRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: ignore
   React.useEffect(() => {
     if (isOpen) {
       scrollToBottom();
@@ -91,6 +93,7 @@ export function ChatBox() {
       const fullConvData: Conversation & { messages: MessageWithSender[] } =
         await messagesRes.json();
       setMessages(fullConvData.messages);
+      // biome-ignore lint/suspicious/noExplicitAny: ignore
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -109,7 +112,7 @@ export function ChatBox() {
 
     const channel = ably.channels.get(`chat:${conversation.id}`);
 
-    const handleNewMessage = (message: Ably.Types.Message) => {
+    const handleNewMessage = (message: Ably.Message) => {
       setMessages((prev) => [...prev, message.data as MessageWithSender]);
     };
 
@@ -152,7 +155,7 @@ export function ChatBox() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: input }),
       });
-    } catch (e) {
+    } catch (_e) {
       setError('Failed to send message.');
       setMessages((prev) => prev.filter((m) => m.id !== optimisticMessage.id));
     }
