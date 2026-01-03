@@ -2,6 +2,8 @@
 
 import type Ably from 'ably';
 import {
+  Check,
+  CheckCheck,
   Clock,
   CreditCard,
   Headset,
@@ -11,6 +13,7 @@ import {
   Shield,
   User,
   X,
+  XCircle,
 } from 'lucide-react';
 import * as React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -44,6 +47,8 @@ const SUPPORT_INFO = {
   hours: 'Mon-Sun, 24/7',
 };
 
+type MessageStatus = 'sending' | 'sent' | 'delivered' | 'failed';
+
 type MessageWithSender = Message & {
   sender: {
     id: string;
@@ -51,6 +56,8 @@ type MessageWithSender = Message & {
     image: string | undefined | null;
     role: string;
   };
+  status?: MessageStatus;
+  isOptimistic?: boolean;
 };
 
 export function ChatBox() {
@@ -92,7 +99,12 @@ export function ChatBox() {
       if (!messagesRes.ok) throw new Error('Failed to fetch messages.');
       const fullConvData: Conversation & { messages: MessageWithSender[] } =
         await messagesRes.json();
-      setMessages(fullConvData.messages);
+      setMessages(
+        fullConvData.messages.map((m) => ({
+          ...m,
+          status: 'delivered' as MessageStatus,
+        })),
+      );
       // biome-ignore lint/suspicious/noExplicitAny: ignore
     } catch (e: any) {
       setError(e.message);
@@ -113,7 +125,31 @@ export function ChatBox() {
     const channel = ably.channels.get(`chat:${conversation.id}`);
 
     const handleNewMessage = (message: Ably.Message) => {
-      setMessages((prev) => [...prev, message.data as MessageWithSender]);
+      const newMessage = message.data as MessageWithSender;
+
+      setMessages((prev) => {
+        // Check if this is an optimistic message that needs to be replaced
+        const optimisticIndex = prev.findIndex(
+          (m) =>
+            m.isOptimistic &&
+            m.content === newMessage.content &&
+            m.senderId === newMessage.senderId,
+        );
+
+        if (optimisticIndex !== -1) {
+          // Replace optimistic message with real one
+          const updated = [...prev];
+          updated[optimisticIndex] = { ...newMessage, status: 'delivered' };
+          return updated;
+        }
+
+        // Check if message already exists (by ID)
+        const exists = prev.some((m) => m.id === newMessage.id);
+        if (exists) return prev;
+
+        // Add new message
+        return [...prev, { ...newMessage, status: 'delivered' }];
+      });
     };
 
     channel.subscribe('new-message', handleNewMessage);
@@ -126,8 +162,9 @@ export function ChatBox() {
   const handleSend = async () => {
     if (!input.trim() || !conversation?.id || !session?.user) return;
 
+    const tempId = `temp-${Date.now()}-${Math.random()}`;
     const optimisticMessage: MessageWithSender = {
-      id: window.crypto.randomUUID(),
+      id: tempId,
       content: input,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -145,20 +182,49 @@ export function ChatBox() {
         image: session.user.image,
         role: 'USER',
       },
+      status: 'sending',
+      isOptimistic: true,
     };
+
     setMessages((prev) => [...prev, optimisticMessage]);
     setInput('');
 
     try {
-      await fetch(`/api/chat/conversations/${conversation.id}/messages`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: input }),
-      });
+      const response = await fetch(
+        `/api/chat/conversations/${conversation.id}/messages`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: optimisticMessage.content }),
+        },
+      );
+
+      if (!response.ok) throw new Error('Failed to send message');
+
+      // Update status to sent (will be replaced by Ably message with 'delivered' status)
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === tempId ? { ...m, status: 'sent' as MessageStatus } : m,
+        ),
+      );
     } catch (_e) {
+      // Mark message as failed
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === tempId ? { ...m, status: 'failed' as MessageStatus } : m,
+        ),
+      );
       setError('Failed to send message.');
-      setMessages((prev) => prev.filter((m) => m.id !== optimisticMessage.id));
     }
+  };
+
+  const handleRetry = (messageId: string) => {
+    const failedMessage = messages.find((m) => m.id === messageId);
+    if (!failedMessage) return;
+
+    // Remove failed message and resend
+    setMessages((prev) => prev.filter((m) => m.id !== messageId));
+    setInput(failedMessage.content);
   };
 
   const handleQuickAction = (action: string) => {
@@ -170,6 +236,23 @@ export function ChatBox() {
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  const MessageStatusIcon = ({ status }: { status?: MessageStatus }) => {
+    if (!status) return null;
+
+    switch (status) {
+      case 'sending':
+        return <Clock className='h-3 w-3 text-muted-foreground/60' />;
+      case 'sent':
+        return <Check className='h-3 w-3 text-muted-foreground/60' />;
+      case 'delivered':
+        return <CheckCheck className='h-3 w-3 text-blue-500' />;
+      case 'failed':
+        return <XCircle className='h-3 w-3 text-destructive' />;
+      default:
+        return null;
+    }
   };
 
   const renderContent = () => {
@@ -252,13 +335,30 @@ export function ChatBox() {
                 m.senderId === session?.user.id
                   ? 'bg-primary text-primary-foreground rounded-tr-sm'
                   : 'bg-background border rounded-tl-sm',
+                m.status === 'failed' && 'opacity-60',
               )}
             >
               {m.content}
             </div>
-            <span className='text-[10px] text-muted-foreground px-2'>
-              {formatTime(m.createdAt)}
-            </span>
+            <div className='flex items-center gap-1.5 px-2'>
+              <span className='text-[10px] text-muted-foreground'>
+                {formatTime(m.createdAt)}
+              </span>
+              {m.senderId === session?.user.id && (
+                <>
+                  <MessageStatusIcon status={m.status} />
+                  {m.status === 'failed' && (
+                    <button
+                      type='button'
+                      onClick={() => handleRetry(m.id)}
+                      className='text-[10px] text-destructive hover:underline ml-1'
+                    >
+                      Retry
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         ))}
       </>

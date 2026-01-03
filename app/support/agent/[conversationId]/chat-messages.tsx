@@ -1,12 +1,12 @@
 'use client';
 
+import { format, isToday, isYesterday } from 'date-fns';
+import { useEffect, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { ConversationWithDetails } from '@/hooks/use-chat-data';
 import type { MessageWithSender } from '@/hooks/use-chat-messages';
 import type { useSession } from '@/lib/auth-client';
-import { format, isToday, isYesterday } from 'date-fns';
-import { useEffect, useRef } from 'react';
 
 import { EmptyChat } from './empty-chat';
 import { MessageBubble } from './message-bubble';
