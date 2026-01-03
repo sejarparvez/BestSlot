@@ -557,6 +557,7 @@ enum NotificationType {
   ODDS_CHANGED
   PROMOTION
   SYSTEM
+  MESSAGE
 }
 
 model Notification {

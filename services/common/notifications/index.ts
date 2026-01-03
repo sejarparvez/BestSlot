@@ -1,6 +1,6 @@
+import { QUERY_KEYS } from '@/lib/constant';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
-import { QUERY_KEYS } from '@/lib/constant';
 
 export function useNotifications() {
   return useQuery({

@@ -1,24 +1,5 @@
 'use client';
 
-import { formatDistanceToNow } from 'date-fns';
-import {
-  AlertTriangle,
-  Bell,
-  Calendar,
-  Check,
-  CheckCircle,
-  DollarSign,
-  Gift,
-  Info,
-  Trash2,
-  TrendingDown,
-  TrendingUp,
-  Volume2,
-  VolumeX,
-  X,
-} from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -39,6 +20,25 @@ import {
   useRemoveNotificationMutation,
 } from '@/services/common/notifications';
 import { notificationSound } from '@/utils/notification-sound';
+import { formatDistanceToNow } from 'date-fns';
+import {
+  AlertTriangle,
+  Bell,
+  Calendar,
+  Check,
+  CheckCircle,
+  DollarSign,
+  Gift,
+  Info,
+  Trash2,
+  TrendingDown,
+  TrendingUp,
+  Volume2,
+  VolumeX,
+  X,
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 type NotificationType =
   | 'BET_PLACED'
