@@ -1,8 +1,8 @@
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma'; // Adjust the import path as needed
 import { Decimal } from '@prisma/client/runtime/client';
 import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma'; // Adjust the import path as needed
 
 export async function POST(req: NextRequest) {
   try {
@@ -111,23 +111,6 @@ export async function POST(req: NextRequest) {
             cashedOutMultiplier,
             winnings,
             profit: winningsAmount.minus(new Decimal(betAmount)).toNumber(),
-          },
-        },
-      });
-
-      // Create a notification for the user
-      await tx.notification.create({
-        data: {
-          userId: session.user.id,
-          type: 'BET_WON',
-          title: 'Bet Won! 🎉',
-          message: `You cashed out at ${cashedOutMultiplier.toFixed(2)}x and won ${winningsAmount.toFixed(2)} ${wallet.currency}`,
-          data: {
-            betId: pendingBet.id,
-            transactionId: transaction.id,
-            gameName,
-            multiplier: cashedOutMultiplier,
-            winnings: winningsAmount.toNumber(),
           },
         },
       });
