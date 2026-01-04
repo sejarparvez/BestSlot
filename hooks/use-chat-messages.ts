@@ -162,6 +162,7 @@ export function useChatMessages({
       optimisticId: string,
       type: 'TEXT' | 'IMAGE' = 'TEXT',
       fileUrl?: string,
+      publicId?: string,
     ) => {
       if (!content.trim() && type === 'TEXT') return;
       if (!conversationId || !session?.user) return;
@@ -182,6 +183,7 @@ export function useChatMessages({
         fileUrl: fileUrl || null,
         fileName: null,
         fileSize: null,
+        publicId: publicId || null,
         sender: {
           id: session.user.id,
           name: session.user.name,
@@ -200,7 +202,13 @@ export function useChatMessages({
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content, optimisticId, type, fileUrl }),
+            body: JSON.stringify({
+              content,
+              optimisticId,
+              type,
+              fileUrl,
+              publicId,
+            }),
           },
         );
 
@@ -228,7 +236,7 @@ export function useChatMessages({
   const retryMessage = useCallback(
     async (messageId: string) => {
       const failedMessage = messages.find((m) => m.id === messageId);
-      if (failedMessage?.content) {
+      if (failedMessage) {
         const newOptimisticId = messageId.startsWith('temp-')
           ? messageId.substring(5)
           : window.crypto.randomUUID();
@@ -238,6 +246,7 @@ export function useChatMessages({
           newOptimisticId,
           failedMessage.type,
           failedMessage.fileUrl || undefined,
+          failedMessage.publicId || undefined,
         );
       }
     },
@@ -251,9 +260,10 @@ export function useChatMessages({
       content: string,
       type: 'TEXT' | 'IMAGE' = 'TEXT',
       fileUrl?: string,
+      publicId?: string,
     ) => {
       const optimisticId = window.crypto.randomUUID();
-      await sendMessage(content, optimisticId, type, fileUrl);
+      await sendMessage(content, optimisticId, type, fileUrl, publicId);
     },
     retryMessage,
     isLoading,

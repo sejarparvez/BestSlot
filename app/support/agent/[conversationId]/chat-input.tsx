@@ -19,6 +19,7 @@ interface ChatInputProps {
     content: string,
     type?: 'TEXT' | 'IMAGE',
     fileUrl?: string,
+    publicId?: string,
   ) => Promise<void>;
   isConnected: boolean;
   connectionState: string;
@@ -135,8 +136,8 @@ export function ChatInput({
     formData.append('image', file);
 
     try {
-      const { secure_url } = await sendImageAction(formData);
-      await onSendMessage('', 'IMAGE', secure_url);
+      const { secure_url, public_id } = await sendImageAction(formData);
+      await onSendMessage('', 'IMAGE', secure_url, public_id);
     } catch (error) {
       console.error('Failed to upload image:', error);
       // Optionally, show an error to the user

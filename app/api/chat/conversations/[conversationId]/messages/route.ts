@@ -45,7 +45,13 @@ export async function POST(
     }
 
     const { conversationId } = await params;
-    const { content, type = 'TEXT', fileUrl, optimisticId } = await req.json();
+    const {
+      content,
+      type = 'TEXT',
+      fileUrl,
+      publicId,
+      optimisticId,
+    } = await req.json();
 
     if (!content && type === 'TEXT') {
       return NextResponse.json(
@@ -94,6 +100,7 @@ export async function POST(
         content,
         type,
         fileUrl,
+        publicId,
         conversationId,
         senderId: sender.id,
       },

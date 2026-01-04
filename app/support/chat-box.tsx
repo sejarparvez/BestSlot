@@ -301,7 +301,62 @@ export function ChatBox() {
     }
   };
 
-  const handleSend = async (imageUrl?: string) => {
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    // Optimistically show a loading state for the image
+    const optimisticId = window.crypto.randomUUID();
+    const optimisticMessage: MessageWithSender = {
+      id: `temp-${optimisticId}`,
+      content: '',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      conversationId: conversation!.id,
+      senderId: session!.user.id,
+      isRead: false,
+      readAt: null,
+      type: 'IMAGE',
+      fileUrl: URL.createObjectURL(file), // Temporary local URL
+      fileName: file.name,
+      fileSize: file.size,
+      publicId: null,
+      sender: {
+        id: session!.user.id,
+        name: session!.user.name,
+        image: session!.user.image,
+        role: 'USER',
+      },
+      status: 'sending',
+      isOptimistic: true,
+    };
+    setMessages((prev) => [...prev, optimisticMessage]);
+
+    try {
+      const { secure_url, public_id } = await sendImageAction(formData);
+      await handleSend(secure_url, public_id);
+
+      // Replace the optimistic message with the real one from the server (handled by Ably)
+      setMessages((prev) =>
+        prev.filter((m) => m.id !== `temp-${optimisticId}`),
+      );
+    } catch (error) {
+      console.error('Failed to upload image:', error);
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === `temp-${optimisticId}` ? { ...m, status: 'failed' } : m,
+        ),
+      );
+      setError('Failed to upload image.');
+    }
+  };
+
+  const handleSend = async (imageUrl?: string, publicId?: string) => {
     const content = input.trim();
     if (!content && !imageUrl) return;
     if (!conversation?.id || !session?.user) return;
@@ -328,6 +383,7 @@ export function ChatBox() {
       fileUrl: imageUrl || null,
       fileName: null,
       fileSize: null,
+      publicId: publicId || null,
       sender: {
         id: session.user.id,
         name: session.user.name,
@@ -352,6 +408,7 @@ export function ChatBox() {
             content: optimisticMessage.content,
             optimisticId,
             fileUrl: imageUrl,
+            publicId,
             type: messageType,
           }),
         },
@@ -372,60 +429,6 @@ export function ChatBox() {
         ),
       );
       setError('Failed to send message.');
-    }
-  };
-
-  const handleFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append('image', file);
-
-    // Optimistically show a loading state for the image
-    const optimisticId = window.crypto.randomUUID();
-    const optimisticMessage: MessageWithSender = {
-      id: `temp-${optimisticId}`,
-      content: '',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      conversationId: conversation!.id,
-      senderId: session!.user.id,
-      isRead: false,
-      readAt: null,
-      type: 'IMAGE',
-      fileUrl: URL.createObjectURL(file), // Temporary local URL
-      fileName: file.name,
-      fileSize: file.size,
-      sender: {
-        id: session!.user.id,
-        name: session!.user.name,
-        image: session!.user.image,
-        role: 'USER',
-      },
-      status: 'sending',
-      isOptimistic: true,
-    };
-    setMessages((prev) => [...prev, optimisticMessage]);
-
-    try {
-      const { secure_url } = await sendImageAction(formData);
-      await handleSend(secure_url);
-
-      // Replace the optimistic message with the real one from the server (handled by Ably)
-      setMessages((prev) =>
-        prev.filter((m) => m.id !== `temp-${optimisticId}`),
-      );
-    } catch (error) {
-      console.error('Failed to upload image:', error);
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === `temp-${optimisticId}` ? { ...m, status: 'failed' } : m,
-        ),
-      );
-      setError('Failed to upload image.');
     }
   };
 
