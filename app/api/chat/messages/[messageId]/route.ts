@@ -1,9 +1,9 @@
+import { headers } from 'next/headers';
+import { type NextRequest, NextResponse } from 'next/server';
 import { DeleteImage } from '@/cloudinary/delete-image';
 import { ably } from '@/lib/ably';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { headers } from 'next/headers';
-import { type NextRequest, NextResponse } from 'next/server';
 
 export async function DELETE(
   _req: NextRequest,

@@ -38,10 +38,22 @@ export function ChatMessages({
   onDeleteMessage,
 }: ChatMessagesProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const prevMessagesCountRef = useRef(messages.length);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: this is fine
+  // Scroll to bottom on initial render
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+  }, []);
+
+  // Scroll to bottom for new messages or typing
+  useEffect(() => {
+    const wasMessageAdded = messages.length > prevMessagesCountRef.current;
+
+    if (wasMessageAdded || isTyping) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    prevMessagesCountRef.current = messages.length;
   }, [messages, isTyping]);
 
   const formatMessageDate = (date: Date) => {

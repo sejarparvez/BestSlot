@@ -115,6 +115,7 @@ export function ChatBox() {
   const typingTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const scrollAnchorRef = React.useRef<HTMLDivElement>(null);
+  const prevMessagesCountRef = React.useRef(messages.length);
 
   const currentSessionId = session?.user?.id;
 
@@ -125,9 +126,24 @@ export function ChatBox() {
   // biome-ignore lint/correctness/useExhaustiveDependencies: this is fine
   React.useEffect(() => {
     if (isOpen) {
+      // A small delay to ensure messages are rendered before scrolling
+      const timer = setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: this is fine
+  React.useEffect(() => {
+    const wasMessageAdded = messages.length > prevMessagesCountRef.current;
+
+    if (wasMessageAdded || isTyping) {
       scrollToBottom();
     }
-  }, [messages, isOpen, isTyping]);
+
+    prevMessagesCountRef.current = messages.length;
+  }, [messages, isTyping]);
 
   const initConversation = React.useCallback(async () => {
     if (!isOpen || !session || conversation) return;
@@ -247,12 +263,21 @@ export function ChatBox() {
       }
     };
 
+    const handleMessageDeleted = (message: Ably.Message) => {
+      const { messageId } = message.data;
+      setMessages((prev) => prev.filter((m) => m.id !== messageId));
+    };
+
     channel.subscribe('new-message', handleNewMessage);
     channel.subscribe('messages-read', handleMessagesRead);
     channel.subscribe('typing', handleTyping);
+    channel.subscribe('message-deleted', handleMessageDeleted);
 
     return () => {
-      channel.unsubscribe();
+      channel.unsubscribe('new-message', handleNewMessage);
+      channel.unsubscribe('messages-read', handleMessagesRead);
+      channel.unsubscribe('typing', handleTyping);
+      channel.unsubscribe('message-deleted', handleMessageDeleted);
     };
   }, [ably, conversation, currentSessionId]);
 

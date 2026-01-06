@@ -2,6 +2,7 @@ import type Ably from 'ably';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { useSession } from '@/lib/auth-client';
 import type { Message } from '@/lib/generated/prisma/client';
+import { messageSound, typingSound } from '@/utils/notification-sound';
 
 export type MessageStatus =
   | 'sending'
@@ -100,6 +101,10 @@ export function useChatMessages({
         optimisticId?: string;
       };
 
+      if (incomingMessage.senderId !== currentSessionId) {
+        messageSound(true);
+      }
+
       setMessages((prev) => {
         if (
           incomingMessage.senderId === currentSessionId &&
@@ -138,6 +143,11 @@ export function useChatMessages({
     const handleTyping = (message: Ably.Message) => {
       const { userId, isTyping: typingStatus } = message.data;
       if (userId === currentSessionId) return;
+
+      if (!isTyping && typingStatus) {
+        typingSound(true);
+      }
+
       setIsTyping(typingStatus);
 
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
@@ -157,10 +167,13 @@ export function useChatMessages({
     channel.subscribe('message-deleted', handleMessageDeleted);
 
     return () => {
-      channel.unsubscribe();
+      channel.unsubscribe('new-message', handleNewMessage);
+      channel.unsubscribe('messages-read', handleMessagesRead);
+      channel.unsubscribe('typing', handleTyping);
+      channel.unsubscribe('message-deleted', handleMessageDeleted);
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     };
-  }, [ably, isConnected, conversationId, currentSessionId]);
+  }, [ably, isConnected, conversationId, currentSessionId, isTyping]);
 
   const sendMessage = useCallback(
     async (
