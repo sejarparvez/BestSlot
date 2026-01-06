@@ -1,9 +1,9 @@
-import { headers } from 'next/headers';
-import { type NextRequest, NextResponse } from 'next/server';
 import { DeleteImage } from '@/cloudinary/delete-image';
 import { ably } from '@/lib/ably';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { headers } from 'next/headers';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export async function DELETE(
   _req: NextRequest,
@@ -23,7 +23,6 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    console.log(await params);
     const { messageId } = await params;
 
     const message = await prisma.message.findUnique({
@@ -33,6 +32,8 @@ export async function DELETE(
     if (!message) {
       return NextResponse.json({ error: 'Message not found' }, { status: 404 });
     }
+
+    console.log(message);
 
     if (message.publicId) {
       await DeleteImage(message.publicId);
