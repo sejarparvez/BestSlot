@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { ably } from '@/lib/ably';
+import { ably, publishConversationUpdate } from '@/lib/ably';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
@@ -126,16 +126,17 @@ export async function POST(
     const channel = ably.channels.get(`chat:${conversationId}`);
     await channel.publish('new-message', { ...newMessage, optimisticId });
 
-    // 5. Publish unread count notification to the recipient(s)
+    // 5. Publish unread count and sidebar updates
     if (sender.role === 'ADMIN') {
       // Admin is sending, so notify the user who started the conversation
       await publishUnreadCountForUser(conversation.userId);
+      // Also notify the sending admin so their other sessions update
+      await publishConversationUpdate(conversationId);
     } else {
       // User is sending. Notify the assigned admin, or all admins if unassigned.
       if (conversation.assignedToId) {
         await publishUnreadCountForUser(conversation.assignedToId);
       } else {
-        // No specific admin assigned, notify all active admins
         const admins = await prisma.user.findMany({
           where: { role: 'ADMIN', isActive: true },
           select: { id: true },
@@ -144,6 +145,7 @@ export async function POST(
           await publishUnreadCountForUser(admin.id);
         }
       }
+      await publishConversationUpdate(conversationId);
     }
 
     return NextResponse.json(newMessage);

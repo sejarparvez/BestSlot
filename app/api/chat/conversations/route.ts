@@ -1,5 +1,6 @@
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { publishConversationUpdate } from '@/lib/ably';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
@@ -105,6 +106,9 @@ export async function POST() {
         userId: session.user.id,
       },
     });
+
+    // Notify agents that a new conversation has been created
+    await publishConversationUpdate(newConversation.id);
 
     return NextResponse.json(newConversation);
   } catch (error) {
